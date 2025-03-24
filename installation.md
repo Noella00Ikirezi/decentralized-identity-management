@@ -21,6 +21,6 @@ Assure-toi que ces outils sont installés sur ta machine :
 ### 1. Clone le repository GitHub
 
 ```bash
-git clone https://github.com/<ton-username>/<nom-du-repo>.git
-cd <nom-du-repo>
+git clone [https://github.com/Noella00Ikirezi/decentralized-identity-management.git]
+cd decentralized-identity-management
 
