@@ -1,108 +1,62 @@
+// backend/index.js
+
 require('dotenv').config();
+
 const express = require('express');
 const cors = require('cors');
+const bodyParser = require('body-parser');
 const { ethers } = require('ethers');
-const { v4: uuidv4 } = require('uuid');
+const { create } = require('ipfs-http-client');
 
+// Initialiser l'app Express
 const app = express();
-const port = 5000;
+const port = process.env.PORT || 5000;
 
-app.use(express.json());
+// Middlewares
 app.use(cors());
+app.use(bodyParser.json());
 
-// ✅ Connect to Ethereum using Infura
-const provider = new ethers.JsonRpcProvider(`https://sepolia.infura.io/v3/${process.env.INFURA_PROJECT_ID}`);
+// Connexion à Ethereum via ethers.js
+const provider = new ethers.providers.JsonRpcProvider(process.env.ETHEREUM_PROVIDER);
 const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
-const issuerDID = `did:ethr:${wallet.address}`;
 
-console.log(`🔹 Ethereum Wallet Connected: ${wallet.address}`);
-console.log(`🔹 Using Infura Project ID: ${process.env.INFURA_PROJECT_ID}`);
+// Exemple de chargement du contrat (ABI à générer depuis Truffle)
+const contractABI = require('./abi.json'); // à générer via Truffle compile
+const contractAddress = process.env.CONTRACT_ADDRESS;
+const contract = new ethers.Contract(contractAddress, contractABI, wallet);
 
-// ✅ Store issued credentials (Temporary, Replace with DB later)
-const issuedCredentials = [];
+// Connexion IPFS
+const ipfs = create({
+  host: process.env.IPFS_HOST,
+  port: process.env.IPFS_PORT,
+  protocol: process.env.IPFS_PROTOCOL,
+});
 
-// ✅ Issue Verifiable Credential
-app.post('/issue-credential', async (req, res) => {
+// Route de base pour tester la connexion
+app.get('/', (req, res) => {
+  res.json({ message: '✅ API Decentralized Identity Management opérationnelle !' });
+});
+
+// Exemple de route : Stocker un document sur IPFS et sauvegarder son hash sur Ethereum
+app.post('/api/documents', async (req, res) => {
   try {
-    console.log("🔵 Received Credential Issuance Request...");
-    const { subjectDID, credentialType, credentialData } = req.body;
+    const { documentData } = req.body;
 
-    if (!subjectDID || !credentialType || !credentialData) {
-      console.error("❌ Error: Missing required fields.");
-      return res.status(400).json({ error: "Missing required fields" });
-    }
+    // Ajouter à IPFS
+    const { path } = await ipfs.add(JSON.stringify(documentData));
 
-    console.log(`📌 Issuing Credential for DID: ${subjectDID}`);
-    console.log(`📌 Credential Type: ${credentialType}`);
-    console.log(`📌 Credential Data:`, credentialData);
+    // Sauvegarder le hash IPFS sur Ethereum via Smart Contract (exemple)
+    const tx = await contract.storeDocumentHash(path);
+    await tx.wait();
 
-    const vc = {
-      "@context": ["https://www.w3.org/2018/credentials/v1"],
-      "id": `urn:uuid:${uuidv4()}`,
-      "type": ["VerifiableCredential", credentialType],
-      "issuer": issuerDID,
-      "issuanceDate": new Date().toISOString(),
-      "credentialSubject": {
-        "id": subjectDID,
-        ...credentialData
-      },
-      "proof": {
-        "type": "EthereumSignature",
-        "created": new Date().toISOString(),
-        "verificationMethod": `${issuerDID}#keys-1`,
-        "proofPurpose": "assertionMethod",
-        "proofValue": await wallet.signMessage(JSON.stringify(credentialData))
-      }
-    };
-
-    console.log(`✅ Credential Issued Successfully:`, vc);
-    issuedCredentials.push(vc);
-    res.json({ credential: vc });
-
+    res.status(201).json({ ipfsHash: path, txHash: tx.hash });
   } catch (error) {
-    console.error("❌ Credential Issuance Failed:", error.message);
+    console.error(error);
     res.status(500).json({ error: error.message });
   }
 });
 
-// ✅ Verify Credential
-app.post('/verify-credential', async (req, res) => {
-  try {
-    console.log("🔵 Received Credential Verification Request...");
-    const { credential } = req.body;
-
-    if (!credential || !credential.proof || !credential.proof.proofValue) {
-      console.error("❌ Error: Invalid credential format.");
-      return res.status(400).json({ error: "Invalid credential format" });
-    }
-
-    console.log("📌 Credential to Verify:", credential);
-    
-    const { proofValue, verificationMethod } = credential.proof;
-    const credentialData = JSON.stringify(credential.credentialSubject);
-    
-    console.log("🔹 Recovering address from signature...");
-    const recoveredAddress = ethers.verifyMessage(credentialData, proofValue);
-    const expectedIssuer = verificationMethod.replace("#keys-1", "");
-
-    console.log(`🔹 Expected Issuer Address: ${expectedIssuer}`);
-    console.log(`🔹 Recovered Address from Signature: ${recoveredAddress}`);
-
-    if (recoveredAddress.toLowerCase() === expectedIssuer.toLowerCase()) {
-      console.log("✅ Credential Verified Successfully!");
-      return res.json({ valid: true, message: "Credential is valid ✅" });
-    } else {
-      console.error("❌ Verification Failed: Credential signature is invalid.");
-      return res.json({ valid: false, message: "Credential signature is invalid ❌" });
-    }
-
-  } catch (error) {
-    console.error("❌ Credential Verification Failed:", error.message);
-    res.status(500).json({ error: "Verification failed", details: error.message });
-  }
-});
-
+// Démarrage du serveur
 app.listen(port, () => {
-  console.log(`✅ Server running at http://localhost:${port}`);
-  console.log(`✅ Issuer DID: ${issuerDID}`);
+  console.log(`🚀 Backend démarré sur http://localhost:${port}`);
 });
