@@ -1,32 +1,84 @@
-# Decentralized Identity Management Solution
+# 🚀 Decentralized Identity Management Solution
 
-## 🚀 Description
-Ce projet permet une gestion d'identité décentralisée sécurisée et confidentielle basée sur la technologie blockchain. Il facilite le partage d'identités et de documents vérifiés via un simple QR code, répondant à des cas pratiques tels que :
+## 🔖 Description
+Ce projet propose une solution complète de gestion d'identité décentralisée (DID) sécurisée sur Ethereum. Il facilite le partage d'identités et documents vérifiés à l'aide d'un simple QR code, adapté à des scénarios comme :
 
-- Partager facilement ses bulletins de paie avec un bailleur.
-- Présenter sa carte étudiante pour bénéficier de réductions dans un commerce.
-
----
-
-## ✨ Fonctionnalités principales
-
-- ✅ **Création et gestion des identifiants numériques décentralisés (DID)**
-- ✅ **Stockage sécurisé et vérification des documents via Verifiable Credentials (VC)**
-- ✅ **Génération et validation rapide de QR codes pour le partage d'informations ciblées**
+- 📄 Partager rapidement ses derniers bulletins de paie avec un bailleur.
+- 🎓 Présenter une carte étudiante numérisée pour bénéficier de réductions dans des commerces.
 
 ---
 
-## 🛠️ Technologies utilisées
+## ✨ Fonctionnalités Principales
 
-| Type                        | Technologies                             |
-| --------------------------- | ---------------------------------------- |
-| Blockchain                  | Ethereum / Hyperledger Indy-Aries / Polygon |
-| Stockage décentralisé       | IPFS / Filecoin                          |
-| Standards                   | Decentralized Identifiers (DID), Verifiable Credentials (VC) |
-| Génération et lecture QR    | QRCode.js, ZXing                         |
-| Sécurité et confidentialité | AES, RSA, Zero-Knowledge Proofs          |
+- **✅ Identités Numériques Décentralisées (DID) sur Ethereum**
+- **✅ Stockage sécurisé des documents via IPFS**
+- **✅ Création et partage simplifié de Verifiable Credentials**
+- **✅ Génération et validation instantanée via QR codes**
+
+---
+
+## 🛠️ Stack Technique choisie
+
+| Composant               | Technologie choisie           |
+|-------------------------|-------------------------------|
+| Blockchain              | **Ethereum**                  |
+| Smart Contracts         | **Solidity**                  |
+| Backend                 | **Node.js (Express)**         |
+| Frontend                | **React.js**                  |
+| Stockage décentralisé   | **IPFS**                      |
+| Génération de QR codes  | **QRCode.js**                 |
+| Sécurité                | **JWT, AES, RSA**             |
 
 ---
 
 ## 📂 Structure du Projet
 
+- **`backend/`**
+  - API REST en Node.js (Express)
+  - Connexion à Ethereum via Web3.js/Ethers.js
+  - Déploiement et gestion des Smart Contracts Solidity
+  - Stockage des documents vérifiés sur IPFS
+
+- **`frontend/`**
+  - Application React.js
+  - Génération et lecture dynamique de QR codes (QRCode.js)
+  - Interaction utilisateur simple et intuitive
+  - Connexion sécurisée avec le backend
+
+- **`smart-contracts/`**
+  - Contrats Solidity pour DID et Verifiable Credentials
+  - Scripts de déploiement automatisés (Truffle ou Hardhat)
+
+- **`docs/`**
+  - Documentation technique et architecture détaillée
+  - Guides utilisateur et développeur
+
+- **`scripts/`**
+  - Automatisation des tests et du déploiement
+
+- **`.github/workflows/`**
+  - Intégration continue et déploiement automatique via GitHub Actions
+
+---
+
+## 🚧 Installation
+
+Guide complet bientôt disponible dans [`docs/installation.md`](docs/installation.md).
+
+---
+
+## 🌟 Contribution
+
+Les contributions sont les bienvenues !
+
+1. 🍴 Fork le repository  
+2. 🌿 Crée ta branche de feature (`git checkout -b feature/ma-nouvelle-feature`)  
+3. 💻 Commit tes changements (`git commit -m "Ajout : Ma nouvelle feature"`)  
+4. 🚀 Push ta branche (`git push origin feature/ma-nouvelle-feature`)  
+5. ✅ Ouvre une Pull Request sur GitHub !
+
+---
+
+## 📜 Licence
+
+Ce projet est sous licence **MIT** — Voir [LICENSE](LICENSE) pour plus de détails.
