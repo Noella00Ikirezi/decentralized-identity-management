@@ -1,6 +1,8 @@
-const express = require('express');
+// routes/identity.routes.js
+import express from 'express';
+import * as controller from '../controllers/identity.controller.js';
+
 const router = express.Router();
-const controller = require('../controllers/identity.controller');
 
 router.get('/owner/:identity', controller.getOwner);
 router.post('/owner/change', controller.changeOwner);
@@ -18,4 +20,4 @@ router.post('/attribute/revoke-signed', controller.revokeAttributeSigned);
 
 router.post('/hash', controller.createHashes);
 
-module.exports = router;
+export default router; // ✅ C’est ça qu’il manquait

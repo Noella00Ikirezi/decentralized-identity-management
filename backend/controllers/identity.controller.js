@@ -1,17 +1,14 @@
-const Web3 = require('web3');
-const contractJSON = require('../contracts/IdentityManager.json');
+import Web3 from 'web3';
+import contractJSON from '../../smart-contracts/build/contracts/IdentityManager.json' assert { type: 'json' };
 
-const web3 = new Web3('http://127.0.0.1:7545'); // Ganache local
+const web3 = new Web3('http://127.0.0.1:7545');
 const networkId = Object.keys(contractJSON.networks)[0];
 const contractAddress = contractJSON.networks[networkId].address;
 const IdentityManager = new web3.eth.Contract(contractJSON.abi, contractAddress);
 
-// Utilitaire pour hash delegateType string (ex: "sigAuth")
 const toDelegateTypeHash = (delegateType) => web3.utils.keccak256(delegateType);
 
-// ========== Owner ==========
-
-exports.getOwner = async (req, res) => {
+export const getOwner = async (req, res) => {
   try {
     const { identity } = req.params;
     const owner = await IdentityManager.methods.getOwner(identity).call();
@@ -21,7 +18,7 @@ exports.getOwner = async (req, res) => {
   }
 };
 
-exports.changeOwner = async (req, res) => {
+export const changeOwner = async (req, res) => {
   try {
     const { identity, newOwner, from } = req.body;
     const tx = await IdentityManager.methods.changeOwner(identity, newOwner).send({ from });
@@ -31,7 +28,7 @@ exports.changeOwner = async (req, res) => {
   }
 };
 
-exports.changeOwnerSigned = async (req, res) => {
+export const changeOwnerSigned = async (req, res) => {
   try {
     const { identity, newOwner, v, r, s, from } = req.body;
     const tx = await IdentityManager.methods.changeOwnerSigned(identity, newOwner, v, r, s).send({ from });
@@ -41,9 +38,7 @@ exports.changeOwnerSigned = async (req, res) => {
   }
 };
 
-// ========== Delegates ==========
-
-exports.addDelegate = async (req, res) => {
+export const addDelegate = async (req, res) => {
   try {
     const { identity, delegate, delegateType, expiresIn, from } = req.body;
     const typeHash = toDelegateTypeHash(delegateType);
@@ -54,7 +49,7 @@ exports.addDelegate = async (req, res) => {
   }
 };
 
-exports.addDelegateSigned = async (req, res) => {
+export const addDelegateSigned = async (req, res) => {
   try {
     const { identity, delegate, delegateType, expiresIn, v, r, s, from } = req.body;
     const typeHash = toDelegateTypeHash(delegateType);
@@ -65,7 +60,7 @@ exports.addDelegateSigned = async (req, res) => {
   }
 };
 
-exports.revokeDelegate = async (req, res) => {
+export const revokeDelegate = async (req, res) => {
   try {
     const { identity, delegate, delegateType, from } = req.body;
     const typeHash = toDelegateTypeHash(delegateType);
@@ -76,7 +71,7 @@ exports.revokeDelegate = async (req, res) => {
   }
 };
 
-exports.revokeDelegateSigned = async (req, res) => {
+export const revokeDelegateSigned = async (req, res) => {
   try {
     const { identity, delegate, delegateType, v, r, s, from } = req.body;
     const typeHash = toDelegateTypeHash(delegateType);
@@ -87,9 +82,7 @@ exports.revokeDelegateSigned = async (req, res) => {
   }
 };
 
-// ========== Attributes ==========
-
-exports.setAttribute = async (req, res) => {
+export const setAttribute = async (req, res) => {
   try {
     const { identity, name, value, expiresIn, from } = req.body;
     const nameHash = web3.utils.keccak256(name);
@@ -100,7 +93,7 @@ exports.setAttribute = async (req, res) => {
   }
 };
 
-exports.setAttributeSigned = async (req, res) => {
+export const setAttributeSigned = async (req, res) => {
   try {
     const { identity, name, value, expiresIn, v, r, s, from } = req.body;
     const nameHash = web3.utils.keccak256(name);
@@ -111,7 +104,7 @@ exports.setAttributeSigned = async (req, res) => {
   }
 };
 
-exports.revokeAttribute = async (req, res) => {
+export const revokeAttribute = async (req, res) => {
   try {
     const { identity, name, value, from } = req.body;
     const nameHash = web3.utils.keccak256(name);
@@ -122,7 +115,7 @@ exports.revokeAttribute = async (req, res) => {
   }
 };
 
-exports.revokeAttributeSigned = async (req, res) => {
+export const revokeAttributeSigned = async (req, res) => {
   try {
     const { identity, name, value, v, r, s, from } = req.body;
     const nameHash = web3.utils.keccak256(name);
@@ -133,9 +126,7 @@ exports.revokeAttributeSigned = async (req, res) => {
   }
 };
 
-// ========== Hash Utils ==========
-
-exports.createHashes = async (req, res) => {
+export const createHashes = async (req, res) => {
   try {
     const { method, identity, params } = req.body;
     let hash;

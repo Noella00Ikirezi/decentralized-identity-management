@@ -1,30 +1,34 @@
-// App.jsx
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Dashboard from "./components/Dashboard";
 import StoreDocument from "./components/StoreDocument";
 import MyDocuments from "./components/MyDocuments";
+import QRCodeView from "./components/QRCodeView";
+import Profile from "./components/Profile";
 import { useAccount } from "./contexts/AccountContext";
 
 const App = () => {
-  const { account } = useAccount();  // Get account status from context
+  const { address } = useAccount();
 
   return (
     <>
       <Navbar />
-      <div>
-        {account ? (
-          <h2>Bienvenue, {account}</h2>
+      <div className="p-4">
+        {address ? (
+          <p className="text-sm text-gray-600 mb-4">Connecté avec: <span className="font-mono">{address}</span></p>
         ) : (
-          <h2>Veuillez vous connecter avec MetaMask</h2>
+          <p className="text-sm text-red-600 mb-4">Veuillez connecter votre wallet</p>
         )}
+
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/store" element={<StoreDocument />} />
+          <Route path="/documents" element={<MyDocuments />} />
+          <Route path="/qrcode" element={<QRCodeView />} />
+          <Route path="/profile" element={<Profile />} />
+        </Routes>
       </div>
-      <Routes>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/store" element={<StoreDocument />} />
-        <Route path="/documents" element={<MyDocuments />} />
-      </Routes>
     </>
   );
 };

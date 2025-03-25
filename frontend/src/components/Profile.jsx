@@ -1,65 +1,40 @@
-// components/Profile.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAccount } from '../contexts/AccountContext';
 
 const Profile = () => {
-  const { profile, updateProfile } = useAccount();
-
-  const [email, setEmail] = useState(profile.email);
-  const [phoneNumber, setPhoneNumber] = useState(profile.phoneNumber);
-  const [photo, setPhoto] = useState(null);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const updatedProfile = { email, phoneNumber, ipfsPhoto: photo };
-    await updateProfile(updatedProfile);
-  };
-
-  const handleFileChange = (e) => {
-    setPhoto(e.target.files[0]);
-  };
+  const { address, contract } = useAccount();
+  const [owner, setOwner] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    setEmail(profile.email);
-    setPhoneNumber(profile.phoneNumber);
-  }, [profile]);
+    const fetchOwner = async () => {
+      try {
+        setLoading(true);
+        const result = await contract.getOwner(address);
+        setOwner(result);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (contract && address) {
+      fetchOwner();
+    }
+  }, [contract, address]);
 
   return (
-    <div>
-      <h2>Mon Profil</h2>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Email :</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
+    <div className="p-4 max-w-xl mx-auto">
+      <h2 className="text-xl font-bold mb-4">Mon Identité</h2>
+      {loading ? (
+        <p>Chargement...</p>
+      ) : (
+        <div className="space-y-2">
+          <p><strong>Adresse actuelle :</strong> {address}</p>
+          <p><strong>Propriétaire DID :</strong> {owner}</p>
         </div>
-        <div>
-          <label>Numéro de téléphone :</label>
-          <input
-            type="text"
-            value={phoneNumber}
-            onChange={(e) => setPhoneNumber(e.target.value)}
-          />
-        </div>
-        <div>
-          <label>Photo de profil :</label>
-          <input type="file" onChange={handleFileChange} />
-        </div>
-        <button type="submit">Mettre à jour</button>
-      </form>
-
-      <div>
-        <h3>Informations actuelles :</h3>
-        <p>Email: {profile.email}</p>
-        <p>Téléphone: {profile.phoneNumber}</p>
-        <p>
-          Photo de profil:{' '}
-          {profile.ipfsPhoto && <img src={`https://ipfs.io/ipfs/${profile.ipfsPhoto}`} alt="profile" width="100" />}
-        </p>
-      </div>
+      )}
     </div>
   );
 };

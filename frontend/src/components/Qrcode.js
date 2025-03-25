@@ -1,49 +1,29 @@
-// src/components/QRCode.js
 import React, { useState } from 'react';
-import axios from 'axios';
+import QRCode from 'qrcode.react';
 
-const QRCode = () => {
-  const [documentIndex, setDocumentIndex] = useState('');
-  const [targetAddress, setTargetAddress] = useState('');
-  const [qrCode, setQrCode] = useState('');
-
-  const handleGenerateQRCode = async () => {
-    try {
-      const response = await axios.post('http://localhost:5000/api/share/document/qr', {
-        documentIndex,
-        targetAddress
-      });
-      setQrCode(response.data.qr);
-    } catch (err) {
-      console.error(err);
-    }
-  };
+const Qrcode = () => {
+  const [cid, setCid] = useState('');
 
   return (
-    <div>
-      <h2>Générer QR Code pour partager un document</h2>
-      <input
-        type="text"
-        placeholder="Index du document"
-        value={documentIndex}
-        onChange={(e) => setDocumentIndex(e.target.value)}
-      />
-      <input
-        type="text"
-        placeholder="Adresse du destinataire"
-        value={targetAddress}
-        onChange={(e) => setTargetAddress(e.target.value)}
-      />
-      <button onClick={handleGenerateQRCode}>Générer QR Code</button>
+    <div className="p-4 max-w-xl mx-auto">
+      <h2 className="text-xl font-bold mb-4">QR Code pour un CID</h2>
 
-      {qrCode && (
-        <div>
-          <h3>Scan ce QR code pour partager le document :</h3>
-          <img src={qrCode} alt="QR Code" />
+      <input
+        type="text"
+        placeholder="Entre un CID IPFS"
+        value={cid}
+        onChange={(e) => setCid(e.target.value)}
+        className="w-full border p-2 mb-4 rounded"
+      />
+
+      {cid && (
+        <div className="text-center">
+          <QRCode value={`https://ipfs.io/ipfs/${cid}`} size={256} />
+          <p className="mt-2 text-sm text-gray-600">https://ipfs.io/ipfs/{cid}</p>
         </div>
       )}
     </div>
   );
 };
 
-export default QRCode;
+export default Qrcode;
