@@ -1,0 +1,21 @@
+# Use Node.js official image
+FROM node:16
+
+# Set working directory in the container
+WORKDIR /usr/src/app
+
+# Copy package.json and package-lock.json to install dependencies
+COPY package.json package-lock.json ./
+
+# Install dependencies (including dev dependencies)
+
+
+# Copy the rest of the backend files into the container
+COPY . .
+
+# Expose the port used by the backend (5000)
+EXPOSE 5000
+
+
+# Run the backend using 'npm run dev' which will use nodemon for hot reloading
+CMD ["npm", "run", "dev"]

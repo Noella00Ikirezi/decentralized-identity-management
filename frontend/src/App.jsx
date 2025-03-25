@@ -1,24 +1,29 @@
+// App.jsx
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
-import Home from "./components/Home";
-import Login from "./components/Login";
-import Profile from "./components/Profile";
-import IssueCredential from "./components/IssueCredential";
-import MyCredentials from "./components/MyCredentials";
-import VerifyCredential from "./components/VerifyCredential";
+import Dashboard from "./components/Dashboard";
+import StoreDocument from "./components/StoreDocument";
+import MyDocuments from "./components/MyDocuments";
+import { useAccount } from "./contexts/AccountContext";
 
 const App = () => {
+  const { account } = useAccount();  // Get account status from context
+
   return (
     <>
       <Navbar />
+      <div>
+        {account ? (
+          <h2>Bienvenue, {account}</h2>
+        ) : (
+          <h2>Veuillez vous connecter avec MetaMask</h2>
+        )}
+      </div>
       <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/issue-credential" element={<IssueCredential />} />
-        <Route path="/my-credentials" element={<MyCredentials />} />
-        <Route path="/verify-credential" element={<VerifyCredential />} />
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/store" element={<StoreDocument />} />
+        <Route path="/documents" element={<MyDocuments />} />
       </Routes>
     </>
   );
