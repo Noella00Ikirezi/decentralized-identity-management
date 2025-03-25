@@ -1,5 +1,12 @@
 import { create } from 'kubo-rpc-client';
+import dotenv from 'dotenv';
 
-const ipfs = create({ host: 'localhost', port: '5001', protocol: 'http' });
+dotenv.config();
+
+const ipfs = create({
+  host: process.env.IPFS_HOST || 'localhost',
+  port: process.env.IPFS_PORT || '5001',
+  protocol: process.env.IPFS_PROTOCOL || 'http',
+});
 
 export default ipfs;

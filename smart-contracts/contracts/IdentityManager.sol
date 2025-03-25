@@ -1,130 +1,127 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.29;
+pragma solidity ^0.8.20;
 
 contract IdentityManager {
-    struct Document {
-        string ipfsHash;
-        uint256 timestamp;
-        string docType;
+    enum DelegateType { veriKey, sigAuth, enc }
+
+    struct Delegate {
+        bytes32 delegateType;
+        uint256 expires;
     }
 
-    struct Profile {
-        string email;
-        string phoneNumber;
-        string ipfsPhoto;
-        bool exists;
+    struct Attribute {
+        bytes value;
+        uint256 expires;
     }
 
-    struct AccessLog {
-        address accessor;
-        uint256 timestamp;
-        string resourceType; // "document" or "profile"
-        string resourceDetail; // docType or "full-profile"
-    }
+    mapping(address => address) public owners;
+    mapping(address => mapping(address => mapping(bytes32 => Delegate))) public delegates;
+    mapping(address => mapping(bytes32 => Attribute)) public attributes;
 
-    mapping(address => Profile) private profiles;
-    mapping(address => Document[]) private documents;
-    mapping(address => mapping(address => bool)) private profileAccess;
-    mapping(address => mapping(address => mapping(uint256 => bool))) private documentAccess;
-    mapping(address => AccessLog[]) private accessLogs;
+    event DIDOwnerChanged(address indexed identity, address owner);
+    event DIDDelegateChanged(address indexed identity, bytes32 delegateType, address delegate, uint256 validTo);
+    event DIDAttributeChanged(address indexed identity, bytes32 name, bytes value, uint256 validTo);
 
-    event ProfileCreated(address indexed user);
-    event ProfileShared(address indexed from, address indexed to);
-    event ProfileAccessRevoked(address indexed from, address indexed to);
-    event DocumentStored(address indexed user, string ipfsHash, string docType, uint256 timestamp);
-    event DocumentShared(address indexed from, address indexed to, uint index);
-    event DocumentAccessRevoked(address indexed from, address indexed to, uint index);
-    event AccessLogged(address indexed accessor, string resourceType, string resourceDetail, uint256 timestamp);
-
-    modifier onlyProfileOwner() {
-        require(profiles[msg.sender].exists, "Profile does not exist");
+    modifier onlyOwner(address identity) {
+        require(msg.sender == getOwner(identity), "Not identity owner");
         _;
     }
 
-    function createProfile(string memory email, string memory phoneNumber, string memory ipfsPhoto) public {
-        require(!profiles[msg.sender].exists, "Profile already exists");
-        profiles[msg.sender] = Profile(email, phoneNumber, ipfsPhoto, true);
-        emit ProfileCreated(msg.sender);
+    function getOwner(address identity) public view returns (address) {
+        if (owners[identity] == address(0)) return identity;
+        return owners[identity];
     }
 
-    function updateProfile(string memory email, string memory phoneNumber, string memory ipfsPhoto) public onlyProfileOwner {
-        profiles[msg.sender] = Profile(email, phoneNumber, ipfsPhoto, true);
+    function changeOwner(address identity, address newOwner) external onlyOwner(identity) {
+        owners[identity] = newOwner;
+        emit DIDOwnerChanged(identity, newOwner);
     }
 
-    function getMyProfile() public view returns (string memory, string memory, string memory) {
-        Profile memory p = profiles[msg.sender];
-        require(p.exists, "Profile not found");
-        return (p.email, p.phoneNumber, p.ipfsPhoto);
+    function changeOwnerSigned(address identity, address newOwner, uint8 v, bytes32 r, bytes32 s) external {
+        bytes32 hash = createChangeOwnerHash(identity, newOwner);
+        address signer = ecrecover(hash, v, r, s);
+        require(signer == getOwner(identity), "Invalid signature");
+        owners[identity] = newOwner;
+        emit DIDOwnerChanged(identity, newOwner);
     }
 
-    function getProfileOf(address user) public view returns (string memory, string memory, string memory) {
-        require(profileAccess[user][msg.sender], "Access denied to profile");
-        Profile memory p = profiles[user];
-        require(p.exists, "Profile not found");
-        return (p.email, p.phoneNumber, p.ipfsPhoto);
+    function addDelegate(address identity, bytes32 delegateType, address delegate, uint256 expiresIn) external onlyOwner(identity) {
+        uint256 validTo = block.timestamp + expiresIn;
+        delegates[identity][delegate][delegateType] = Delegate(delegateType, validTo);
+        emit DIDDelegateChanged(identity, delegateType, delegate, validTo);
     }
 
-    function shareProfileWith(address target) public onlyProfileOwner {
-        profileAccess[msg.sender][target] = true;
-        emit ProfileShared(msg.sender, target);
+    function addDelegateSigned(address identity, bytes32 delegateType, address delegate, uint256 expiresIn, uint8 v, bytes32 r, bytes32 s) external {
+        bytes32 hash = createAddDelegateHash(identity, delegateType, delegate, expiresIn);
+        address signer = ecrecover(hash, v, r, s);
+        require(signer == getOwner(identity), "Invalid signature");
+        uint256 validTo = block.timestamp + expiresIn;
+        delegates[identity][delegate][delegateType] = Delegate(delegateType, validTo);
+        emit DIDDelegateChanged(identity, delegateType, delegate, validTo);
     }
 
-    function revokeProfileAccess(address target) public onlyProfileOwner {
-        profileAccess[msg.sender][target] = false;
-        emit ProfileAccessRevoked(msg.sender, target);
+    function revokeDelegate(address identity, bytes32 delegateType, address delegate) external onlyOwner(identity) {
+        delegates[identity][delegate][delegateType].expires = block.timestamp;
+        emit DIDDelegateChanged(identity, delegateType, delegate, block.timestamp);
     }
 
-    function hasAccessToProfile(address owner) public view returns (bool) {
-        return profileAccess[owner][msg.sender];
+    function revokeDelegateSigned(address identity, bytes32 delegateType, address delegate, uint8 v, bytes32 r, bytes32 s) external {
+        bytes32 hash = createRevokeDelegateHash(identity, delegateType, delegate);
+        address signer = ecrecover(hash, v, r, s);
+        require(signer == getOwner(identity), "Invalid signature");
+        delegates[identity][delegate][delegateType].expires = block.timestamp;
+        emit DIDDelegateChanged(identity, delegateType, delegate, block.timestamp);
     }
 
-    function storeDocumentHash(string memory ipfsHash, string memory docType) public {
-        documents[msg.sender].push(Document(ipfsHash, block.timestamp, docType));
-        emit DocumentStored(msg.sender, ipfsHash, docType, block.timestamp);
+    function setAttribute(address identity, bytes32 name, bytes memory value, uint256 expiresIn) external onlyOwner(identity) {
+        uint256 validTo = block.timestamp + expiresIn;
+        attributes[identity][keccak256(abi.encodePacked(name, value))] = Attribute(value, validTo);
+        emit DIDAttributeChanged(identity, name, value, validTo);
     }
 
-    function getMyDocuments() public view returns (Document[] memory) {
-        return documents[msg.sender];
+    function setAttributeSigned(address identity, bytes32 name, bytes memory value, uint256 expiresIn, uint8 v, bytes32 r, bytes32 s) external {
+        bytes32 hash = createSetAttributeHash(identity, name, value, expiresIn);
+        address signer = ecrecover(hash, v, r, s);
+        require(signer == getOwner(identity), "Invalid signature");
+        uint256 validTo = block.timestamp + expiresIn;
+        attributes[identity][keccak256(abi.encodePacked(name, value))] = Attribute(value, validTo);
+        emit DIDAttributeChanged(identity, name, value, validTo);
     }
 
-    function getMyDocument(uint index) public view returns (Document memory) {
-        require(index < documents[msg.sender].length, "Invalid document index");
-        return documents[msg.sender][index];
+    function revokeAttribute(address identity, bytes32 name, bytes memory value) external onlyOwner(identity) {
+        attributes[identity][keccak256(abi.encodePacked(name, value))].expires = block.timestamp;
+        emit DIDAttributeChanged(identity, name, value, block.timestamp);
     }
 
-    function shareDocumentWith(address target, uint index) public {
-        require(index < documents[msg.sender].length, "Invalid document index");
-        documentAccess[msg.sender][target][index] = true;
-        emit DocumentShared(msg.sender, target, index);
+    function revokeAttributeSigned(address identity, bytes32 name, bytes memory value, uint8 v, bytes32 r, bytes32 s) external {
+        bytes32 hash = createRevokeAttributeHash(identity, name, value);
+        address signer = ecrecover(hash, v, r, s);
+        require(signer == getOwner(identity), "Invalid signature");
+        attributes[identity][keccak256(abi.encodePacked(name, value))].expires = block.timestamp;
+        emit DIDAttributeChanged(identity, name, value, block.timestamp);
     }
 
-    function acceptDocumentShare(address from, uint index) public {
-        require(index < documents[from].length, "Invalid document index");
-        documentAccess[from][msg.sender][index] = true;
-        emit DocumentShared(from, msg.sender, index);
+    function createChangeOwnerHash(address identity, address newOwner) public pure returns (bytes32) {
+        return keccak256(abi.encodePacked("changeOwner", identity, newOwner));
     }
 
-    function revokeDocumentAccess(address target, uint index) public {
-        documentAccess[msg.sender][target][index] = false;
-        emit DocumentAccessRevoked(msg.sender, target, index);
+    function createAddDelegateHash(address identity, bytes32 delegateType, address delegate, uint256 expiresIn) public pure returns (bytes32) {
+        return keccak256(abi.encodePacked("addDelegate", identity, delegateType, delegate, expiresIn));
     }
 
-    function hasAccessToDocument(address owner, uint index) public view returns (bool) {
-        return documentAccess[owner][msg.sender][index];
+    function createRevokeDelegateHash(address identity, bytes32 delegateType, address delegate) public pure returns (bytes32) {
+        return keccak256(abi.encodePacked("revokeDelegate", identity, delegateType, delegate));
     }
 
-    function getDocumentFrom(address owner, uint index) public view returns (Document memory) {
-        require(documentAccess[owner][msg.sender][index], "Access denied");
-        Document memory doc = documents[owner][index];
-        return doc;
+    function createSetAttributeHash(address identity, bytes32 name, bytes memory value, uint256 expiresIn) public pure returns (bytes32) {
+        return keccak256(abi.encodePacked("setAttribute", identity, name, value, expiresIn));
     }
 
-    function logAccess(address accessor, string memory resourceType, string memory resourceDetail) internal {
-        accessLogs[accessor].push(AccessLog(accessor, block.timestamp, resourceType, resourceDetail));
-        emit AccessLogged(accessor, resourceType, resourceDetail, block.timestamp);
+    function createRevokeAttributeHash(address identity, bytes32 name, bytes memory value) public pure returns (bytes32) {
+        return keccak256(abi.encodePacked("revokeAttribute", identity, name, value));
     }
 
-    function getMyAccessLogs() public view returns (AccessLog[] memory) {
-        return accessLogs[msg.sender];
+    function getChainId() external view returns (uint256) {
+        return block.chainid;
     }
 }

@@ -1,71 +1,65 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import { useAccount } from '../contexts/AccountContext';
+import { ethers } from 'ethers';
 
 const StoreDocument = () => {
+  const { address, contract, ipfs } = useAccount();
   const [file, setFile] = useState(null);
-  const [docType, setDocType] = useState('');
-  const [success, setSuccess] = useState(false);
-  const [ipfsHash, setIpfsHash] = useState('');
-  const [txHash, setTxHash] = useState('');
-  const [error, setError] = useState('');
+  const [cid, setCid] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!file || !docType) return;
-    setError('');
-    setSuccess(false);
+  const handleUpload = async () => {
+    if (!file) return;
+    setLoading(true);
 
     try {
-      // Create FormData and append the file and document type
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('docType', docType);
+      // 1. Ajouter à IPFS
+      const added = await ipfs.add(file);
+      const cidStr = added.cid.toString();
+      setCid(cidStr);
 
-      // Send the file to the backend for IPFS upload
-      const response = await axios.post('http://localhost:5000/api/documents/upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      // 2. Enregistrer dans smart contract (setAttribute)
+      const name = 'did/doc/cid';
+      const value = ethers.encodeBytes32String(cidStr);
+      const expiresIn = 3600 * 24 * 30; // 30 jours
 
-      // Update state with the IPFS hash and tx hash from the backend response
-      setIpfsHash(response.data.ipfsHash);
-      setTxHash(response.data.txHash);
-      setSuccess(true);
+      const tx = await contract.setAttribute(address, ethers.id(name), value, expiresIn);
+      await tx.wait();
+
+      // 3. Stocker localement
+      const docs = JSON.parse(localStorage.getItem('myDocs') || '[]');
+      localStorage.setItem('myDocs', JSON.stringify([...docs, { cid: cidStr, name: file.name }]));
+
+      alert('Document enregistré !');
     } catch (err) {
       console.error(err);
-      setError('Échec de l\'enregistrement du document.');
+      alert("Erreur lors de l'upload.");
     }
+
+    setLoading(false);
   };
 
   return (
-    <div>
-      <h2>Enregistrer un document (PDF, PNG...)</h2>
-      <form onSubmit={handleSubmit}>
-        <input type="file" onChange={handleFileChange} />
-        <input
-          type="text"
-          placeholder="Type de document (ex: Passeport)"
-          value={docType}
-          onChange={(e) => setDocType(e.target.value)}
-        />
-        <button type="submit">Envoyer</button>
-      </form>
+    <div className="p-4 max-w-xl mx-auto">
+      <h2 className="text-xl font-bold mb-4">Uploader un document</h2>
+      <input
+        type="file"
+        className="mb-4"
+        onChange={(e) => setFile(e.target.files[0])}
+      />
+      <button
+        onClick={handleUpload}
+        disabled={!file || loading}
+        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+      >
+        {loading ? 'Envoi en cours...' : 'Envoyer sur IPFS'}
+      </button>
 
-      {success && (
-        <div style={{ marginTop: '1rem', color: 'green' }}>
-          ✅ Document enregistré avec succès !<br />
-          <strong>IPFS Hash :</strong> {ipfsHash}<br />
-          <strong>Tx Hash :</strong> {txHash}<br />
-          <a href={`https://ipfs.io/ipfs/${ipfsHash}`} target="_blank" rel="noreferrer">
-            Voir le fichier sur IPFS
-          </a>
-        </div>
+      {cid && (
+        <p className="mt-4 text-green-600">
+          ✅ CID : <a href={`https://ipfs.io/ipfs/${cid}`} target="_blank" rel="noreferrer">{cid}</a>
+        </p>
       )}
-
-      {error && <p style={{ color: 'red' }}>❌ {error}</p>}
     </div>
   );
 };
