@@ -1,36 +1,88 @@
-import React from "react";
-import { Routes, Route } from "react-router-dom";
-import Navbar from "./components/Navbar";
-import Dashboard from "./components/Dashboard";
-import StoreDocument from "./components/StoreDocument";
-import MyDocuments from "./components/MyDocuments";
-import QRCodeView from "./components/QRCodeView";
-import Profile from "./components/Profile";
-import { useAccount } from "./contexts/AccountContext";
+import { useState, useEffect } from "react";
+import { ethers } from "ethers";
+import FileUpload from "./components/FileUpload";
+import Display from "./components/Display";
+import Modal from "./components/Modal";
 
-const App = () => {
-  const { address } = useAccount();
+import { Button, Container, Row, Col } from "react-bootstrap";
+
+function App() {
+  const [account, setAccount] = useState("");
+  const [contract, setContract] = useState(null);
+  const [provider, setProvider] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+
+  useEffect(() => {
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+
+    const loadProvider = async () => {
+      if (provider) {
+        window.ethereum.on("chainChanged", () => {
+          window.location.reload();
+        });
+
+        window.ethereum.on("accountsChanged", () => {
+          window.location.reload();
+        });
+        await provider.send("eth_requestAccounts", []);
+        const signer = provider.getSigner();
+        const address = await signer.getAddress();
+        setAccount(address);
+        let contractAddress = "Your Contract Address Here";
+
+        const contract = new ethers.Contract(
+          contractAddress,
+          Upload.abi,
+          signer
+        );
+        setContract(contract);
+        setProvider(provider);
+      } else {
+        console.error("Metamask is not installed");
+      }
+    };
+    provider && loadProvider();
+  }, []);
 
   return (
-    <>
-      <Navbar />
-      <div className="p-4">
-        {address ? (
-          <p className="text-sm text-gray-600 mb-4">Connecté avec: <span className="font-mono">{address}</span></p>
-        ) : (
-          <p className="text-sm text-red-600 mb-4">Veuillez connecter votre wallet</p>
+    <div className="App">
+      <Container className="mt-5">
+        {!modalOpen && (
+          <Button
+            className="share-btn"
+            variant="primary"
+            onClick={() => setModalOpen(true)}
+          >
+            Share
+          </Button>
         )}
 
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/store" element={<StoreDocument />} />
-          <Route path="/documents" element={<MyDocuments />} />
-          <Route path="/qrcode" element={<QRCodeView />} />
-          <Route path="/profile" element={<Profile />} />
-        </Routes>
-      </div>
-    </>
+        {modalOpen && (
+          <Modal setModalOpen={setModalOpen} contract={contract}></Modal>
+        )}
+
+        <Row>
+          <Col>
+            <h1 style={{ color: "white" }}>Gdrive 3.0</h1>
+            <p style={{ color: "white" }}>
+              Account: {account ? account : "Not connected"}
+            </p>
+            <FileUpload
+              account={account}
+              provider={provider}
+              contract={contract}
+            ></FileUpload>
+          </Col>
+        </Row>
+
+        <Row>
+          <Col>
+            <Display contract={contract} account={account}></Display>
+          </Col>
+        </Row>
+      </Container>
+    </div>
   );
-};
+}
 
 export default App;

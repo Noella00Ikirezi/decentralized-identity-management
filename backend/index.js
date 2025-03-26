@@ -1,23 +1,25 @@
 // index.js
-import dotenv from 'dotenv';
 import express from 'express';
-import cors from 'cors';
-import bodyParser from 'body-parser';
+import dotenv from 'dotenv';
+import ipfsRoutes from './routes/ipfs.routes.js';  // Importation des routes IPFS
+import identityRoutes from './routes/identity.routes.js';  // Importation des routes Identity
 
-import identityRoutes from './routes/identity.routes.js';
-
-import ipfsRoutes from './routes/ipfs.routes.js';
-
+// Charger les variables d'environnement
 dotenv.config();
 
+// Initialisation du serveur Express
 const app = express();
 
-app.use(cors());
-app.use(bodyParser.json());
+// Middleware pour traiter le JSON
+app.use(express.json());
 
+// Middleware pour traiter les fichiers (si nécessaire)
+import multer from 'multer';
+const upload = multer();
 
-app.use('/api/ipfs', ipfsRoutes);
-app.use('/api/identity', identityRoutes); 
+// Utilisation des routes
+app.use('/ipfs', ipfsRoutes);  // Routes IPFS sous /ipfs
+app.use('/identity', identityRoutes);  // Routes Identity sous /identity
 
 // Démarrage serveur
 app.listen(process.env.PORT || 5000, () => {
