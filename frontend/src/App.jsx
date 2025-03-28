@@ -3,6 +3,7 @@ import { ethers } from "ethers";
 import FileUpload from "./components/FileUpload";
 import Display from "./components/Display";
 import Modal from "./components/Modal";
+import IdentityManager from "../../smart-contracts/build/contracts/IdentityManager.json";
 
 import { Button, Container, Row, Col } from "react-bootstrap";
 
@@ -28,13 +29,18 @@ function App() {
         const signer = provider.getSigner();
         const address = await signer.getAddress();
         setAccount(address);
-        let contractAddress = "Your Contract Address Here";
+        const networkId = await provider.getNetwork().then(n => n.chainId.toString());
+        const contractAddress = IdentityManager.networks[networkId].address;
 
-        const contract = new ethers.Contract(
-          contractAddress,
-          Upload.abi,
-          signer
-        );
+
+        
+
+    const contract = new ethers.Contract(
+      contractAddress,
+      IdentityManager.abi,
+      signer
+    );
+
         setContract(contract);
         setProvider(provider);
       } else {

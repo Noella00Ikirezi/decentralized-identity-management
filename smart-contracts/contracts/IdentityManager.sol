@@ -83,8 +83,10 @@ contract IdentityManagerWithUpload {
 
     // Function to add a document URL to a user's document collection
     function addDocument(address user, string memory url) external {
-        documentURLs[user].push(url);
+    require(msg.sender == user, "You can only upload documents for yourself");
+    documentURLs[user].push(url);
     }
+
 
     // Function to grant access to documents for a specific user
     function allowAccess(address user) external {
