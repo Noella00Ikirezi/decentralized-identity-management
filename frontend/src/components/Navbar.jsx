@@ -1,28 +1,50 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
+import logo from '../assets/logo.svg';
+
+const navItems = [
+  { name: 'Accueil', path: '/' },
+  { name: 'Profil', path: '/profile' },
+  { name: 'Documents', path: '/documents' },
+  { name: 'Partage', path: '/share' },
+  { name: 'Historique', path: '/history' },
+];
 
 const Navbar = () => {
+  const location = useLocation();
+
   return (
-    <nav className="bg-white shadow py-4 px-6 flex justify-between items-center">
-      <h1 className="text-xl font-bold text-blue-600">DIMS</h1>
-      <ul className="flex space-x-6 text-sm">
-        <li>
-          <Link to="/" className="text-gray-700 hover:text-blue-600">Accueil</Link>
-        </li>
-        <li>
-          <Link to="/profile" className="text-gray-700 hover:text-blue-600">Profil</Link>
-        </li>
-        <li>
-          <Link to="/store" className="text-gray-700 hover:text-blue-600">Ajouter</Link>
-        </li>
-        <li>
-          <Link to="/documents" className="text-gray-700 hover:text-blue-600">Documents</Link>
-        </li>
-        <li>
-          <Link to="/qrcode" className="text-gray-700 hover:text-blue-600">QR Code</Link>
-        </li>
-      </ul>
-    </nav>
+    <header className="w-full bg-gray-900 text-white shadow-md">
+      <nav className="max-w-7xl mx-auto flex items-center justify-between px-6 py-4">
+        {/* Logo + Titre */}
+        <Link to="/" className="flex items-center gap-3">
+          <img
+            src={logo}
+            alt="Logo DIMS"
+            className="w-6 h-6 max-w-[1.5rem] max-h-[1.5rem] object-contain block"
+          />
+          <span className="text-3xl font-extrabold tracking-wide">DIMS</span>
+        </Link>
+
+        {/* Liens de navigation visibles partout */}
+        <ul className="flex gap-12 text-xl font-semibold list-none">
+          {navItems.map(({ name, path }) => (
+            <li key={path}>
+              <Link
+                to={path}
+                className={`hover:text-gray-300 transition duration-200 ${
+                  location.pathname === path
+                    ? 'underline underline-offset-4 decoration-2'
+                    : ''
+                }`}
+              >
+                {name}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </header>
   );
 };
 

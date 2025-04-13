@@ -1,37 +1,56 @@
-// controllers/ipfs.controller.js
-import ipfs from '../utils/ipfs.js';  // Assurez-vous que le module ipfs.js est correctement configuré
+// backend/controllers/ipfs.controller.js
+import ipfs from '../utils/ipfs.js';
+import { fileTypeFromBuffer } from 'file-type';
+import { Buffer } from 'buffer';
 
-// Fonction pour uploader un fichier ou du texte vers IPFS
+// Fonction pour uploader un fichier ou un texte vers IPFS
 export const uploadToIPFS = async (req, res) => {
   try {
-    // Vérification si un fichier est envoyé ou si du texte est fourni
-    const content = req.file 
-      ? req.file.buffer  // Si un fichier est envoyé, on utilise le buffer du fichier
-      : Buffer.from(req.body.text || '');  // Sinon, on récupère le texte envoyé
+    const { file } = req;
+    const { content } = req.body;
 
-    // Ajout du contenu à IPFS
-    const { cid } = await ipfs.add(content);  // Ajout du contenu à IPFS
-    res.json({ success: true, cid: cid.toString() });  // Envoie la réponse avec le CID du contenu
+    let buffer;
+    if (file) {
+      buffer = file.buffer;
+    } else if (content) {
+      buffer = Buffer.from(content);
+    } else {
+      return res.status(400).json({ error: 'Aucun fichier ni contenu texte fourni' });
+    }
+
+    const fileType = await fileTypeFromBuffer(buffer);
+    const result = await ipfs.add(buffer);
+
+    res.json({
+      cid: result.cid.toString(),
+      size: result.size,
+      type: fileType ? fileType.mime : 'unknown',
+      base64: buffer.toString('base64')
+    });
   } catch (err) {
-    res.status(500).json({ error: err.message });  // En cas d'erreur, retourne un message d'erreur
+    console.error('Erreur lors de lupload vers IPFS :', err);
+    res.status(500).json({ error: err.message });
   }
 };
 
-// Fonction pour récupérer un fichier ou du texte depuis IPFS via un CID
+// Fonction pour récupérer un fichier ou texte depuis IPFS
 export const getFromIPFS = async (req, res) => {
   try {
-    const { cid } = req.params;  // Récupère le CID depuis les paramètres de la requête
-    const chunks = [];  // Tableau pour stocker les morceaux du fichier
+    const { cid } = req.params;
+    const chunks = [];
 
-    // Utilisation de l'API `cat` pour récupérer les morceaux du fichier
     for await (const chunk of ipfs.cat(cid)) {
-      chunks.push(chunk);  // Ajouter chaque morceau au tableau
+      chunks.push(chunk);
     }
 
-    // Concaténer les morceaux pour obtenir le contenu complet et le convertir en chaîne
-    const content = Buffer.concat(chunks).toString();  
-    res.send(content);  // Envoie le contenu récupéré à l'utilisateur
+    const content = Buffer.concat(chunks);
+    const fileType = await fileTypeFromBuffer(content);
+    const mimeType = fileType?.mime || 'text/plain';
+
+    res.setHeader('Content-Type', mimeType);
+    res.send(content);
   } catch (err) {
-    res.status(500).json({ error: err.message });  // En cas d'erreur, retourne un message d'erreur
+    console.error('Erreur IPFS get:', err);
+    res.status(500).json({ error: 'Impossible de récupérer le fichier' });
   }
 };

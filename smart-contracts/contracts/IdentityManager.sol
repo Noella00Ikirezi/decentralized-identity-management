@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-contract IdentityManagerWithUpload {
+contract IdentityManager {
 
     // Enum for different types of delegates
     enum DelegateType { veriKey, sigAuth, enc }
@@ -87,6 +87,22 @@ contract IdentityManagerWithUpload {
     documentURLs[user].push(url);
     }
 
+function changeOwnerSigned(address identity, address newOwner, uint8 v, bytes32 r, bytes32 s) external {
+    bytes32 hash = createChangeOwnerHash(identity, newOwner);
+    address signer = ecrecover(hash, v, r, s);
+    require(signer == getOwner(identity), "Signature invalide");
+    identityOwners[identity] = newOwner;
+    emit DIDOwnerChanged(identity, newOwner);
+}
+
+function addDelegateSigned(address identity, bytes32 delegateType, address delegate, uint256 expiresIn, uint8 v, bytes32 r, bytes32 s) external {
+    bytes32 hash = createAddDelegateHash(identity, delegateType, delegate, expiresIn);
+    address signer = ecrecover(hash, v, r, s);
+    require(signer == getOwner(identity), "Signature invalide");
+    uint256 validTo = block.timestamp + expiresIn;
+    identityDelegates[identity][delegate][delegateType] = Delegate(delegateType, validTo);
+    emit DIDDelegateChanged(identity, delegateType, delegate, validTo);
+}
 
     // Function to grant access to documents for a specific user
     function allowAccess(address user) external {

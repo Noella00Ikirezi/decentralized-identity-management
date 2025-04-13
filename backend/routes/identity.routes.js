@@ -1,27 +1,28 @@
 // routes/identity.routes.js
 import express from 'express';
-import * as controller from '../controllers/identity.controller.js'; // Importation des fonctions du contrôleur
+import * as controller from '../controllers/identity.controller.js';
+import { verifySignature, checkIdentityOwner } from '../middleware/auth.js';
 
 const router = express.Router();
 
 // Routes pour le propriétaire d'une identité
-router.get('/owner/:identity', controller.getOwner);  // Récupérer le propriétaire d'une identité
-router.post('/owner/change', controller.changeOwner);  // Changer le propriétaire d'une identité
-router.post('/owner/change-signed', controller.changeOwnerSigned);  // Changer le propriétaire avec signature
+router.get('/owner/:identity', controller.getOwner);
+router.post('/owner/change', controller.changeOwner);
+router.post('/owner/change-signed', controller.changeOwnerSigned);
 
 // Routes pour la gestion des délégués
-router.post('/delegate/add', controller.addDelegate);  // Ajouter un délégué
-router.post('/delegate/add-signed', controller.addDelegateSigned);  // Ajouter un délégué avec signature
-router.post('/delegate/revoke', controller.revokeDelegate);  // Révoquer un délégué
-router.post('/delegate/revoke-signed', controller.revokeDelegateSigned);  // Révoquer un délégué avec signature
+router.post('/delegate/add', verifySignature, checkIdentityOwner, controller.addDelegate);
+router.post('/delegate/add-signed', controller.addDelegateSigned);
+router.post('/delegate/revoke', verifySignature, checkIdentityOwner, controller.revokeDelegate);
+router.post('/delegate/revoke-signed', controller.revokeDelegateSigned);
 
 // Routes pour la gestion des attributs
-router.post('/attribute/set', controller.setAttribute);  // Définir un attribut
-router.post('/attribute/set-signed', controller.setAttributeSigned);  // Définir un attribut avec signature
-router.post('/attribute/revoke', controller.revokeAttribute);  // Révoquer un attribut
-router.post('/attribute/revoke-signed', controller.revokeAttributeSigned);  // Révoquer un attribut avec signature
+router.post('/attribute/set', verifySignature, checkIdentityOwner, controller.setAttribute);
+router.post('/attribute/set-signed', controller.setAttributeSigned);
+router.post('/attribute/revoke', verifySignature, checkIdentityOwner, controller.revokeAttribute);
+router.post('/attribute/revoke-signed', controller.revokeAttributeSigned);
 
 // Route pour créer des hash pour différentes opérations
-router.post('/hash', controller.createHashes);  // Créer des hashes pour différentes opérations
+router.post('/hash', controller.createHashes);
 
 export default router;

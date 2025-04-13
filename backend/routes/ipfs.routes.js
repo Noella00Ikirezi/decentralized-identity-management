@@ -1,13 +1,15 @@
 // routes/ipfs.routes.js
 import express from 'express';
-import * as controller from '../controllers/ipfs.controller.js';  // Importation des fonctions du contrôleur IPFS
+import * as controller from '../controllers/ipfs.controller.js';
+import multer from 'multer';
 
 const router = express.Router();
+const upload = multer();
 
-// Route pour télécharger un fichier ou du texte vers IPFS
-router.post('/upload', controller.uploadToIPFS);
+// Route pour uploader un fichier ou texte vers IPFS
+router.post('/upload', upload.single('file'), controller.uploadToIPFS);
 
-// Route pour récupérer un fichier ou du texte depuis IPFS via CID
+// Route pour récupérer un contenu IPFS par CID
 router.get('/content/:cid', controller.getFromIPFS);
 
 export default router;

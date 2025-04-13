@@ -31,3 +31,4 @@ const contract = new ethers.Contract(
 
 // ✅ Export des objets pour utilisation dans le backend
 export { provider, wallet, contract };
+

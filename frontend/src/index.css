@@ -1,0 +1,20 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Global styles */
+html, body {
+  /* ✅ suppression du dégradé qui posait problème */
+  background-color:rgb(255, 255, 255); /* fallback violet pâle */
+  color:rgb(0, 0, 0); /* équivalent à text-gray-900 */
+  font-family: 'Inter', sans-serif;
+  letter-spacing: 0.015em;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Liens */
+a {
+  @apply transition-colors duration-150;
+}

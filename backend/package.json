@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "test": "node --test",
     "start": "node index.js",
     "dev": "nodemon index.js"
   },
@@ -19,12 +20,15 @@
     "ethers": "^5.7.2",
     "express": "^4.21.2",
     "express-validator": "^7.2.1",
+    "file-type": "^20.4.1",
     "kubo-rpc-client": "^5.1.0",
     "multer": "^1.4.5-lts.2",
     "qrcode": "^1.5.4",
     "web3": "^4.16.0"
   },
   "devDependencies": {
-    "nodemon": "^3.1.9"
+    "jest": "^29.7.0",
+    "nodemon": "^3.1.9",
+    "supertest": "^7.1.0"
   }
 }
