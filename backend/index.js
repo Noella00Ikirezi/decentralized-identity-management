@@ -1,27 +1,32 @@
-// index.js
 import express from 'express';
 import dotenv from 'dotenv';
-import ipfsRoutes from './routes/ipfs.routes.js';  // Importation des routes IPFS
-import identityRoutes from './routes/identity.routes.js';  // Importation des routes Identity
+import cors from 'cors';
+import ipfsRoutes from './routes/ipfs.routes.js';
+import identityRoutes from './routes/identity.routes.js';
+import { errorHandler } from './middleware/errorHandler.js';
 
-// Charger les variables d'environnement
 dotenv.config();
 
-// Initialisation du serveur Express
 const app = express();
 
-// Middleware pour traiter le JSON
-app.use(express.json());
+// CORS pour autoriser le frontend
+app.use(cors({
+  origin: 'http://localhost:5173',
+  credentials: true,
+}));
 
-// Middleware pour traiter les fichiers (si nécessaire)
-import multer from 'multer';
-const upload = multer();
+// ⬇️ Augmenter la limite de payload
+app.use(express.json({ limit: '5mb' }));
+app.use(express.urlencoded({ extended: true, limit: '5mb' }));
 
-// Utilisation des routes
-app.use('/ipfs', ipfsRoutes);  // Routes IPFS sous /ipfs
-app.use('/identity', identityRoutes);  // Routes Identity sous /identity
+// Routes
+app.use('/ipfs', ipfsRoutes);
+app.use('/identity', identityRoutes);
 
-// Démarrage serveur
-app.listen(process.env.PORT || 5000, () => {
-  console.log(`🚀 Backend started on http://localhost:${process.env.PORT || 5000}`);
+// Gestion des erreurs
+app.use(errorHandler);
+
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`🚀 Backend running on http://localhost:${PORT}`);
 });

@@ -135,6 +135,23 @@ export const revokeAttributeSigned = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+export const linkProfileToIdentity = async (req, res) => {
+  try {
+    const { identity, cid, expiresIn = 0 } = req.body;
+    const name = 'profile';
+    const nameHash = ethers.keccak256(ethers.toUtf8Bytes(name));
+    const valueBytes = ethers.toUtf8Bytes(cid);
+
+    const tx = await contract.setAttribute(identity, nameHash, valueBytes, expiresIn);
+    await tx.wait();
+
+    res.json({ success: true, txHash: tx.hash });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+
 
 export const createHashes = async (req, res) => {
   try {

@@ -1,0 +1,15 @@
+.home {
+  text-align: center;
+  margin-top: 5rem;
+}
+.home-buttons {
+  margin-top: 2rem;
+}
+.btn {
+  margin: 0 1rem;
+  padding: 0.75rem 1.5rem;
+  background-color: #1a1a1a;
+  color: white;
+  text-decoration: none;
+  border-radius: 5px;
+}

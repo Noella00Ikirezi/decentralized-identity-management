@@ -74,7 +74,7 @@
         {
           "indexed": false,
           "internalType": "address",
-          "name": "owner",
+          "name": "newOwner",
           "type": "address"
         }
       ],
@@ -89,152 +89,25 @@
           "type": "address"
         },
         {
-          "internalType": "bytes32",
-          "name": "",
-          "type": "bytes32"
-        }
-      ],
-      "name": "attributes",
-      "outputs": [
-        {
-          "internalType": "bytes",
-          "name": "value",
-          "type": "bytes"
-        },
-        {
           "internalType": "uint256",
-          "name": "expires",
+          "name": "",
           "type": "uint256"
         }
       ],
-      "stateMutability": "view",
-      "type": "function",
-      "constant": true
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        },
-        {
-          "internalType": "bytes32",
-          "name": "",
-          "type": "bytes32"
-        }
-      ],
-      "name": "delegates",
-      "outputs": [
-        {
-          "internalType": "bytes32",
-          "name": "delegateType",
-          "type": "bytes32"
-        },
-        {
-          "internalType": "uint256",
-          "name": "expires",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function",
-      "constant": true
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "name": "owners",
+      "name": "accessList",
       "outputs": [
         {
           "internalType": "address",
-          "name": "",
+          "name": "user",
           "type": "address"
+        },
+        {
+          "internalType": "bool",
+          "name": "access",
+          "type": "bool"
         }
       ],
       "stateMutability": "view",
-      "type": "function",
-      "constant": true
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "identity",
-          "type": "address"
-        }
-      ],
-      "name": "getOwner",
-      "outputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function",
-      "constant": true
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "identity",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "newOwner",
-          "type": "address"
-        }
-      ],
-      "name": "changeOwner",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "identity",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "newOwner",
-          "type": "address"
-        },
-        {
-          "internalType": "uint8",
-          "name": "v",
-          "type": "uint8"
-        },
-        {
-          "internalType": "bytes32",
-          "name": "r",
-          "type": "bytes32"
-        },
-        {
-          "internalType": "bytes32",
-          "name": "s",
-          "type": "bytes32"
-        }
-      ],
-      "name": "changeOwnerSigned",
-      "outputs": [],
-      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
@@ -312,21 +185,16 @@
       "inputs": [
         {
           "internalType": "address",
-          "name": "identity",
+          "name": "user",
           "type": "address"
         },
         {
-          "internalType": "bytes32",
-          "name": "delegateType",
-          "type": "bytes32"
-        },
-        {
-          "internalType": "address",
-          "name": "delegate",
-          "type": "address"
+          "internalType": "string",
+          "name": "url",
+          "type": "string"
         }
       ],
-      "name": "revokeDelegate",
+      "name": "addDocument",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -335,168 +203,11 @@
       "inputs": [
         {
           "internalType": "address",
-          "name": "identity",
+          "name": "user",
           "type": "address"
-        },
-        {
-          "internalType": "bytes32",
-          "name": "delegateType",
-          "type": "bytes32"
-        },
-        {
-          "internalType": "address",
-          "name": "delegate",
-          "type": "address"
-        },
-        {
-          "internalType": "uint8",
-          "name": "v",
-          "type": "uint8"
-        },
-        {
-          "internalType": "bytes32",
-          "name": "r",
-          "type": "bytes32"
-        },
-        {
-          "internalType": "bytes32",
-          "name": "s",
-          "type": "bytes32"
         }
       ],
-      "name": "revokeDelegateSigned",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "identity",
-          "type": "address"
-        },
-        {
-          "internalType": "bytes32",
-          "name": "name",
-          "type": "bytes32"
-        },
-        {
-          "internalType": "bytes",
-          "name": "value",
-          "type": "bytes"
-        },
-        {
-          "internalType": "uint256",
-          "name": "expiresIn",
-          "type": "uint256"
-        }
-      ],
-      "name": "setAttribute",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "identity",
-          "type": "address"
-        },
-        {
-          "internalType": "bytes32",
-          "name": "name",
-          "type": "bytes32"
-        },
-        {
-          "internalType": "bytes",
-          "name": "value",
-          "type": "bytes"
-        },
-        {
-          "internalType": "uint256",
-          "name": "expiresIn",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint8",
-          "name": "v",
-          "type": "uint8"
-        },
-        {
-          "internalType": "bytes32",
-          "name": "r",
-          "type": "bytes32"
-        },
-        {
-          "internalType": "bytes32",
-          "name": "s",
-          "type": "bytes32"
-        }
-      ],
-      "name": "setAttributeSigned",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "identity",
-          "type": "address"
-        },
-        {
-          "internalType": "bytes32",
-          "name": "name",
-          "type": "bytes32"
-        },
-        {
-          "internalType": "bytes",
-          "name": "value",
-          "type": "bytes"
-        }
-      ],
-      "name": "revokeAttribute",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "identity",
-          "type": "address"
-        },
-        {
-          "internalType": "bytes32",
-          "name": "name",
-          "type": "bytes32"
-        },
-        {
-          "internalType": "bytes",
-          "name": "value",
-          "type": "bytes"
-        },
-        {
-          "internalType": "uint8",
-          "name": "v",
-          "type": "uint8"
-        },
-        {
-          "internalType": "bytes32",
-          "name": "r",
-          "type": "bytes32"
-        },
-        {
-          "internalType": "bytes32",
-          "name": "s",
-          "type": "bytes32"
-        }
-      ],
-      "name": "revokeAttributeSigned",
+      "name": "allowAccess",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -514,17 +225,43 @@
           "type": "address"
         }
       ],
-      "name": "createChangeOwnerHash",
-      "outputs": [
+      "name": "changeOwner",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "identity",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        },
+        {
+          "internalType": "uint8",
+          "name": "v",
+          "type": "uint8"
+        },
         {
           "internalType": "bytes32",
-          "name": "",
+          "name": "r",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "s",
           "type": "bytes32"
         }
       ],
-      "stateMutability": "pure",
-      "type": "function",
-      "constant": true
+      "name": "changeOwnerSigned",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
     },
     {
       "inputs": [
@@ -558,8 +295,60 @@
         }
       ],
       "stateMutability": "pure",
-      "type": "function",
-      "constant": true
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "identity",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "createChangeOwnerHash",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "identity",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "name",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes",
+          "name": "attributeValue",
+          "type": "bytes"
+        }
+      ],
+      "name": "createRevokeAttributeHash",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
     },
     {
       "inputs": [
@@ -588,8 +377,7 @@
         }
       ],
       "stateMutability": "pure",
-      "type": "function",
-      "constant": true
+      "type": "function"
     },
     {
       "inputs": [
@@ -605,7 +393,7 @@
         },
         {
           "internalType": "bytes",
-          "name": "value",
+          "name": "attributeValue",
           "type": "bytes"
         },
         {
@@ -623,8 +411,225 @@
         }
       ],
       "stateMutability": "pure",
-      "type": "function",
-      "constant": true
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        }
+      ],
+      "name": "disallowAccess",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        }
+      ],
+      "name": "displayDocuments",
+      "outputs": [
+        {
+          "internalType": "string[]",
+          "name": "",
+          "type": "string[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "documentURLs",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getChainId",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "identity",
+          "type": "address"
+        }
+      ],
+      "name": "getOwner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "name": "identityAttributes",
+      "outputs": [
+        {
+          "internalType": "bytes",
+          "name": "value",
+          "type": "bytes"
+        },
+        {
+          "internalType": "uint256",
+          "name": "expires",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "name": "identityDelegates",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "delegateType",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "uint256",
+          "name": "expires",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "identityOwners",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "ownership",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "previousAccessRecords",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
     },
     {
       "inputs": [
@@ -640,35 +645,90 @@
         },
         {
           "internalType": "bytes",
-          "name": "value",
+          "name": "attributeValue",
           "type": "bytes"
         }
       ],
-      "name": "createRevokeAttributeHash",
-      "outputs": [
-        {
-          "internalType": "bytes32",
-          "name": "",
-          "type": "bytes32"
-        }
-      ],
-      "stateMutability": "pure",
-      "type": "function",
-      "constant": true
+      "name": "revokeAttribute",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
     },
     {
-      "inputs": [],
-      "name": "getChainId",
-      "outputs": [
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "identity",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "delegateType",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "address",
+          "name": "delegate",
+          "type": "address"
+        }
+      ],
+      "name": "revokeDelegate",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "identity",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "name",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes",
+          "name": "attributeValue",
+          "type": "bytes"
+        },
         {
           "internalType": "uint256",
-          "name": "",
+          "name": "expiresIn",
           "type": "uint256"
         }
       ],
+      "name": "setAttribute",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "shareAccess",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "user",
+              "type": "address"
+            },
+            {
+              "internalType": "bool",
+              "name": "access",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct IdentityManager.Access[]",
+          "name": "",
+          "type": "tuple[]"
+        }
+      ],
       "stateMutability": "view",
-      "type": "function",
-      "constant": true
+      "type": "function"
     }
   ]
 }

@@ -1,17 +1,22 @@
+// Profile.jsx
 import React, { useEffect, useState } from 'react';
+import './Profile.css';
+import { FaUserCircle } from 'react-icons/fa';
+import { FiMail, FiPhone, FiSave } from 'react-icons/fi';
+import { uploadToIPFS } from '../utils/ipfs';
+import { linkProfile } from '../utils/identityService';
 
 const Profile = () => {
-  const [profile, setProfile] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    avatar: null,
-  });
+  const [profile, setProfile] = useState({ name: '', email: '', phone: '', avatar: null });
+  const [cid, setCid] = useState(null);
 
   useEffect(() => {
-    const savedProfile = JSON.parse(localStorage.getItem('profile'));
-    if (savedProfile) {
-      setProfile(savedProfile);
+    const savedCid = localStorage.getItem('profileCid');
+    if (savedCid && savedCid !== 'undefined') {
+      fetch(`http://localhost:5000/ipfs/content/${savedCid}`)
+        .then(res => res.json())
+        .then(data => setProfile(data))
+        .catch(err => console.error('Erreur récupération IPFS :', err));
     }
   }, []);
 
@@ -23,7 +28,6 @@ const Profile = () => {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
     const reader = new FileReader();
     reader.onloadend = () => {
       setProfile((prev) => ({ ...prev, avatar: reader.result }));
@@ -31,70 +35,56 @@ const Profile = () => {
     reader.readAsDataURL(file);
   };
 
-  const handleSave = () => {
-    localStorage.setItem('profile', JSON.stringify(profile));
-    alert('Profil sauvegardé localement !');
+  const handleSave = async () => {
+    try {
+      const data = await uploadToIPFS(profile);
+      const cid = data.cid;
+      setCid(cid);
+      localStorage.setItem('profileCid', cid);
+
+      const [address] = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      await linkProfile({ identity: address, cid, expiresIn: 0 });
+
+      alert('Profil sauvegardé et lié à Ethereum !');
+    } catch (err) {
+      console.error('Erreur de sauvegarde :', err);
+      alert('Erreur de sauvegarde.');
+    }
   };
 
   return (
-    <div className="max-w-xl mx-auto mt-10">
-      <h2 className="text-2xl font-semibold text-indigo-700 mb-6">Mon Profil</h2>
-
-      <div className="bg-white shadow p-6 rounded-lg space-y-4">
-        <div className="flex items-center space-x-4">
+    <div className="profile-container">
+      <h2><FaUserCircle /> Mon Profil</h2>
+      <div className="profile-box">
+        <div className="profile-avatar">
           {profile.avatar ? (
-            <img
-              src={profile.avatar}
-              alt="Avatar"
-              className="w-16 h-16 rounded-full object-cover border"
-            />
+            <img src={profile.avatar} alt="Avatar" />
           ) : (
-            <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
-              ?
-            </div>
+            <div className="placeholder-avatar"><FaUserCircle size={40} /></div>
           )}
           <input type="file" onChange={handleFileChange} />
         </div>
 
-        <div>
-          <label className="block text-sm font-medium mb-1">Nom complet</label>
-          <input
-            type="text"
-            name="name"
-            value={profile.name}
-            onChange={handleChange}
-            className="w-full border px-3 py-2 rounded"
-          />
+        <div className="profile-field">
+          <label>Nom complet</label>
+          <input type="text" name="name" value={profile.name} onChange={handleChange} />
         </div>
 
-        <div>
-          <label className="block text-sm font-medium mb-1">Email</label>
-          <input
-            type="email"
-            name="email"
-            value={profile.email}
-            onChange={handleChange}
-            className="w-full border px-3 py-2 rounded"
-          />
+        <div className="profile-field">
+          <label><FiMail /> Email</label>
+          <input type="email" name="email" value={profile.email} onChange={handleChange} />
         </div>
 
-        <div>
-          <label className="block text-sm font-medium mb-1">Téléphone</label>
-          <input
-            type="tel"
-            name="phone"
-            value={profile.phone}
-            onChange={handleChange}
-            className="w-full border px-3 py-2 rounded"
-          />
+        <div className="profile-field">
+          <label><FiPhone /> Téléphone</label>
+          <input type="tel" name="phone" value={profile.phone} onChange={handleChange} />
         </div>
 
-        <button
-          onClick={handleSave}
-          className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
-        >
-          Sauvegarder
+        <button onClick={handleSave} className="btn">
+          <FiSave style={{ marginRight: '5px' }} /> Sauvegarder
         </button>
+
+        {cid && <p>CID IPFS : {cid}</p>}
       </div>
     </div>
   );

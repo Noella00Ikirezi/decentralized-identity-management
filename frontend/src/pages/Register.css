@@ -1,0 +1,44 @@
+.register-container {
+  max-width: 400px;
+  margin: 50px auto;
+  padding: 2rem;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.register-container h2 {
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.register-container p {
+  margin: 0.5rem 0;
+  color: #555;
+}
+
+.register-container .info {
+  color: #0077cc;
+  font-weight: bold;
+}
+
+.register-container .error {
+  color: #cc0000;
+}
+
+.register-container .btn {
+  margin-top: 1rem;
+  padding: 0.6rem 1.2rem;
+  font-size: 1rem;
+  border: none;
+  background-color: #4f46e5;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.register-container .btn:hover {
+  background-color: #3730a3;
+}

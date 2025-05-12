@@ -1,5 +1,5 @@
 import React from 'react';
-
+import './DocumentCard.css';
 const DocumentCard = ({ name, cid, onPreview }) => {
   return (
     <div className="bg-gray-100 p-4 rounded shadow flex justify-between items-center">

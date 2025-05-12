@@ -1,0 +1,134 @@
+.documents {
+  max-width: 900px;
+  margin: 2rem auto;
+  padding: 1rem;
+  background-color: #f7f9fc;
+  border-radius: 8px;
+}
+
+.upload-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: #4f46e5;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-bottom: 1rem;
+  font-weight: bold;
+  font-size: 0.95rem;
+}
+
+.upload-btn:hover {
+  background-color: #3730a3;
+}
+
+.doc-card {
+  background: white;
+  border: 1px solid #e0e0e0;
+  padding: 1rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.doc-card span {
+  font-weight: 600;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.doc-card .btn {
+  margin-right: 0.5rem;
+  margin-top: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background-color: #e2e8f0;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.doc-card .btn:hover {
+  background-color: #cbd5e1;
+}
+
+.doc-card .btn-danger {
+  background-color: #ef4444;
+  color: white;
+}
+
+.doc-card .btn-danger:hover {
+  background-color: #dc2626;
+}
+
+.share-history {
+  margin-top: 1rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid #ccc;
+  font-size: 0.85rem;
+}
+
+.share-history h5 {
+  margin-bottom: 0.5rem;
+  color: #374151;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.share-modal {
+  position: fixed;
+  top: 20%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  z-index: 10;
+  width: 90%;
+  max-width: 400px;
+}
+
+.share-modal h3 {
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.share-modal input {
+  width: 100%;
+  margin-bottom: 0.8rem;
+  padding: 0.6rem;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+}
+
+.share-modal .btn {
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+@media screen and (max-width: 600px) {
+  .doc-card {
+    font-size: 0.9rem;
+  }
+
+  .upload-btn,
+  .doc-card .btn {
+    font-size: 0.8rem;
+    padding: 6px 8px;
+  }
+
+  .share-modal {
+    padding: 1rem;
+  }
+}

@@ -1,5 +1,5 @@
 import React from 'react';
-
+import './PreviewModal.css';
 const PreviewModal = ({ cid, name, onClose }) => {
   const url = `https://ipfs.io/ipfs/${cid}`;
   const extension = name.split('.').pop().toLowerCase();

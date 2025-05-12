@@ -9,7 +9,7 @@ const router = express.Router();
 router.get('/owner/:identity', controller.getOwner);
 router.post('/owner/change', controller.changeOwner);
 router.post('/owner/change-signed', controller.changeOwnerSigned);
-
+router.post('/profile', controller.linkProfileToIdentity);
 // Routes pour la gestion des délégués
 router.post('/delegate/add', verifySignature, checkIdentityOwner, controller.addDelegate);
 router.post('/delegate/add-signed', controller.addDelegateSigned);

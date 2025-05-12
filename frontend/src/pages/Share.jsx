@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import QRCode from 'react-qr-code'; // ✅ nouveau package compatible
-
+import './Share.css';
 const Share = () => {
   const [selectedCid, setSelectedCid] = useState('');
   const [cids, setCids] = useState([]);
