@@ -1,0 +1,18 @@
+{
+  "name": "smart-contracts",
+  "version": "1.0.0",
+  "description": "Smart contracts for DIMS, deployed on local Ganache",
+  "scripts": {
+    "compile": "hardhat compile",
+    "deploy": "hardhat run scripts/deploy.js --network ganache"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^3.0.0",
+    "dotenv": "^16.3.1",
+    "hardhat": "^2.23.0"
+  },
+  "dependencies": {
+    "ethers": "^6.14.4",
+    "Hardhat": "npm:hardhat@^2.25.0"
+  }
+}

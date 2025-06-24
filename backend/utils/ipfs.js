@@ -1,30 +1,35 @@
-
-// File: backend/utils/ipfs.js
-import { create } from 'kubo-rpc-client';
+import axios from 'axios';
+import FormData from 'form-data';
 import dotenv from 'dotenv';
+import fs from 'fs';
+
 dotenv.config();
 
-if (!process.env.IPFS_HOST || !process.env.IPFS_PORT || !process.env.IPFS_PROTOCOL) {
-  console.error("IPFS configuration manquante dans les variables d'environnement");
+const PINATA_BASE_URL = 'https://api.pinata.cloud/pinning';
+const PINATA_API_KEY = process.env.PINATA_API_KEY;
+const PINATA_SECRET = process.env.PINATA_API_SECRET;
+
+if (!PINATA_API_KEY || !PINATA_SECRET) {
+  console.error('❌ Clé API Pinata manquante dans .env');
   process.exit(1);
 }
 
-const ipfs = create({
-  host: process.env.IPFS_HOST,
-  port: process.env.IPFS_PORT,
-  protocol: process.env.IPFS_PROTOCOL,
-});
+// ⬆️ Upload d’un fichier Buffer ou base64 (ex: image, PDF...)
+export const pinFileToIPFS = async (buffer, fileName = 'file.txt') => {
+  const formData = new FormData();
+  formData.append('file', buffer, fileName);
 
-const checkConnection = async () => {
-  try {
-    const id = await ipfs.id();
-    console.log("Connecté à IPFS avec l'ID :", id.id);
-  } catch (err) {
-    console.error("Erreur lors de la connexion à IPFS :", err.message);
-    process.exit(1);
-  }
+  const res = await axios.post(`${PINATA_BASE_URL}/pinFileToIPFS`, formData, {
+    maxBodyLength: Infinity,
+    headers: {
+      ...formData.getHeaders(),
+      pinata_api_key: PINATA_API_KEY,
+      pinata_secret_api_key: PINATA_SECRET
+    }
+  });
+
+  return res.data;
 };
 
-checkConnection();
-
-export default ipfs;
+// ⬇️ Accès public via gateway
+export const getPinataURL = (cid) => `https://gateway.pinata.cloud/ipfs/${cid}`;

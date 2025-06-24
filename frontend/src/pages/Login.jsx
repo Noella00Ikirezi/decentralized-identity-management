@@ -14,7 +14,7 @@ const Login = () => {
       const provider = new ethers.BrowserProvider(window.ethereum);
       const accounts = await provider.send('eth_requestAccounts', []);
       setAccount(accounts[0]);
-      navigate('/profile');
+      navigate('/Register');
     } catch (err) {
       console.error(err);
       setError('Connexion refusée ou erreur lors de la requête MetaMask.');
@@ -35,7 +35,7 @@ const Login = () => {
 
         if (accounts.length > 0) {
           setAccount(accounts[0]);
-          navigate('/profile');
+          navigate('/login');
         } else {
           requestConnection(); // déclenche la popup une seule fois
         }

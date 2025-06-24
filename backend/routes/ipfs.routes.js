@@ -1,15 +1,19 @@
-// routes/ipfs.routes.js
 import express from 'express';
-import * as controller from '../controllers/ipfs.controller.js';
 import multer from 'multer';
+import {
+  uploadToIPFSAndLink,
+  getFromIPFS,
+  getDocuments,
+  revokeDocument
+} from '../controllers/ipfs.controller.js';
 
 const router = express.Router();
 const upload = multer();
 
-// Route pour uploader un fichier ou texte vers IPFS
-router.post('/upload', upload.single('file'), controller.uploadToIPFS);
-
-// Route pour récupérer un contenu IPFS par CID
-router.get('/content/:cid', controller.getFromIPFS);
+// Routes Web3Storage
+router.post('/upload', upload.single('file'), uploadToIPFSAndLink);
+router.get('/content/:cid', getFromIPFS);
+router.get('/list/:address', getDocuments);
+router.post('/revoke', revokeDocument);
 
 export default router;

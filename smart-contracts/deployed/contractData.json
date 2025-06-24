@@ -1,0 +1,33 @@
+{
+  "address": "0x4DfC7b94BC971D8674bc540B3d2ac820Ce74eDdB",
+  "abi": [
+    "event DIDAttributeChanged(address indexed,bytes32,bytes,uint256)",
+    "event DIDDelegateChanged(address indexed,bytes32,address,uint256)",
+    "event DIDOwnerChanged(address indexed,address)",
+    "event DocumentAdded(address indexed,uint256 indexed,string)",
+    "event DocumentRevoked(address indexed,uint256 indexed)",
+    "event DocumentShareRevoked(address indexed,uint256 indexed,address)",
+    "event DocumentShared(address indexed,uint256 indexed,address,uint256)",
+    "function addDelegate(address,bytes32,address,uint256)",
+    "function addDocument(string,string,uint256)",
+    "function attributes(address,bytes32) view returns (bytes,uint256)",
+    "function canAccess(address,uint256) view returns (bool)",
+    "function changeOwner(address,address)",
+    "function changeOwnerSigned(address,address,uint8,bytes32,bytes32)",
+    "function createChangeOwnerHash(address,address) pure returns (bytes32)",
+    "function delegates(address,address,bytes32) view returns (bytes32,uint256)",
+    "function getChainId() view returns (uint256)",
+    "function getMyDocuments() view returns ((string,string,uint256,uint256,bool)[])",
+    "function getOwner(address) view returns (address)",
+    "function getSharedAccesses(uint256) view returns ((address,uint256,bool)[])",
+    "function owners(address) view returns (address)",
+    "function revokeAttribute(address,bytes32,bytes)",
+    "function revokeDelegate(address,bytes32,address)",
+    "function revokeDocument(uint256)",
+    "function revokeSharedAccess(uint256,address)",
+    "function setAttribute(address,bytes32,bytes,uint256)",
+    "function shareDocument(uint256,address,uint256)",
+    "function sharedDocuments(address,uint256,uint256) view returns (address,uint256,bool)",
+    "function userDocuments(address,uint256) view returns (string,string,uint256,uint256,bool)"
+  ]
+}
