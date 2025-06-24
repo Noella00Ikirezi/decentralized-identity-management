@@ -135,12 +135,13 @@ export const revokeAttributeSigned = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
 export const linkProfileToIdentity = async (req, res) => {
   try {
     const { identity, cid, expiresIn = 0 } = req.body;
     const name = 'profile';
-    const nameHash = ethers.keccak256(ethers.toUtf8Bytes(name));
-    const valueBytes = ethers.toUtf8Bytes(cid);
+    const nameHash = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(name));
+    const valueBytes = ethers.utils.toUtf8Bytes(cid);
 
     const tx = await contract.setAttribute(identity, nameHash, valueBytes, expiresIn);
     await tx.wait();
@@ -150,8 +151,6 @@ export const linkProfileToIdentity = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-
-
 
 export const createHashes = async (req, res) => {
   try {
@@ -168,10 +167,19 @@ export const createHashes = async (req, res) => {
         hash = await contract.callStatic.createRevokeDelegateHash(identity, toDelegateTypeHash(params.delegateType), params.delegate);
         break;
       case 'setAttribute':
-        hash = await contract.callStatic.createSetAttributeHash(identity, ethers.utils.keccak256(ethers.utils.toUtf8Bytes(params.name)), ethers.utils.arrayify(params.value), params.expiresIn);
+        hash = await contract.callStatic.createSetAttributeHash(
+          identity,
+          ethers.utils.keccak256(ethers.utils.toUtf8Bytes(params.name)),
+          ethers.utils.arrayify(params.value),
+          params.expiresIn
+        );
         break;
       case 'revokeAttribute':
-        hash = await contract.callStatic.createRevokeAttributeHash(identity, ethers.utils.keccak256(ethers.utils.toUtf8Bytes(params.name)), ethers.utils.arrayify(params.value));
+        hash = await contract.callStatic.createRevokeAttributeHash(
+          identity,
+          ethers.utils.keccak256(ethers.utils.toUtf8Bytes(params.name)),
+          ethers.utils.arrayify(params.value)
+        );
         break;
       default:
         return res.status(400).json({ error: 'Méthode non prise en charge' });
@@ -181,3 +189,148 @@ export const createHashes = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+export const getIdentity = async (req, res) => {
+  try {
+    const { identity } = req.params;
+    const owner = await contract.getOwner(identity);
+    const delegates = await contract.getDelegates(identity);
+    const attributes = await contract.getAttributes(identity);
+
+    res.json({ identity, owner, delegates, attributes });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+export const getIdentityByOwner = async (req, res) => {
+  try {
+    const { owner } = req.params;
+    const identity = await contract.getIdentityByOwner(owner);
+    res.json({ owner, identity });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+export const getIdentityByDelegate = async (req, res) => {
+  try {
+    const { delegate } = req.params;
+    const identities = await contract.getIdentitiesByDelegate(delegate);
+    res.json({ delegate, identities });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}; 
+export const getIdentityByAttribute = async (req, res) => {
+  try {
+    const { name, value } = req.params;
+    const nameHash = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(name));
+    const identities = await contract.getIdentitiesByAttribute(nameHash, ethers.utils.arrayify(value));
+    res.json({ name, value, identities });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+export const getIdentityByProfile = async (req, res) => {
+  try {
+    const { cid } = req.params;
+    const identities = await contract.getIdentitiesByProfile(cid);
+    res.json({ cid, identities });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+export const getIdentityByOwnerAndProfile = async (req, res) => {
+  try {
+    const { owner, cid } = req.params;
+    const identities = await contract.getIdentitiesByOwnerAndProfile(owner, cid);
+    res.json({ owner, cid, identities });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+export const getIdentityByOwnerAndAttribute = async (req, res) => {
+  try {
+    const { owner, name, value } = req.params;
+    const nameHash = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(name));
+    const identities = await contract.getIdentitiesByOwnerAndAttribute(owner, nameHash, ethers.utils.arrayify(value));
+    res.json({ owner, name, value, identities });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+export const getIdentityByDelegateAndProfile = async (req, res) => {
+  try {
+    const { delegate, cid } = req.params;
+    const identities = await contract.getIdentitiesByDelegateAndProfile(delegate, cid);
+    res.json({ delegate, cid, identities });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+export const getIdentityByDelegateAndAttribute = async (req, res) => {
+  try {
+    const { delegate, name, value } = req.params;
+    const nameHash = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(name));
+    const identities = await contract.getIdentitiesByDelegateAndAttribute(delegate, nameHash, ethers.utils.arrayify(value));
+    res.json({ delegate, name, value, identities });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+export const getIdentityByProfileAndAttribute = async (req, res) => {
+  try {
+    const { cid, name, value } = req.params;
+    const nameHash = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(name));
+    const identities = await contract.getIdentitiesByProfileAndAttribute(cid, nameHash, ethers.utils.arrayify(value));
+    res.json({ cid, name, value, identities });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+export const getIdentityByOwnerAndProfileAndAttribute = async (req, res) => {
+  try {
+    const { owner, cid, name, value } = req.params;
+    const nameHash = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(name));
+    const identities = await contract.getIdentitiesByOwnerAndProfileAndAttribute(owner, cid, nameHash, ethers.utils.arrayify(value));
+    res.json({ owner, cid, name, value, identities });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+export const getIdentityByDelegateAndProfileAndAttribute = async (req, res) => {
+  try {
+    const { delegate, cid, name, value } = req.params;
+    const nameHash = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(name));
+    const identities = await contract.getIdentitiesByDelegateAndProfileAndAttribute(delegate, cid, nameHash, ethers.utils.arrayify(value));
+    res.json({ delegate, cid, name, value, identities });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+export const getIdentityByOwnerAndDelegate = async (req, res) => {
+  try {
+    const { owner, delegate } = req.params;
+    const identities = await contract.getIdentitiesByOwnerAndDelegate(owner, delegate);
+    res.json({ owner, delegate, identities });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+export const getIdentityByOwnerAndDelegateAndProfile = async (req, res) => {
+  try {
+    const { owner, delegate, cid } = req.params;
+    const identities = await contract.getIdentitiesByOwnerAndDelegateAndProfile(owner, delegate, cid);
+    res.json({ owner, delegate, cid, identities });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+export const getIdentityByOwnerAndDelegateAndAttribute = async (req, res) => {
+  try {
+    const { owner, delegate, name, value } = req.params;
+    const nameHash = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(name));
+    const identities = await contract.getIdentitiesByOwnerAndDelegateAndAttribute(owner, delegate, nameHash, ethers.utils.arrayify(value));
+    res.json({ owner, delegate, name, value, identities });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
