@@ -4,6 +4,12 @@ export const API_BASE = 'http://localhost:5000';
 // IPFS
 export const UPLOAD_IPFS = `${API_BASE}/ipfs/upload`;
 export const GET_IPFS = (cid) => `${API_BASE}/ipfs/content/${cid}`;
+export const GET_DOCUMENTS = (address) => `${API_BASE}/ipfs/list/${address}`;
+export const REVOKE_DOCUMENT = `${API_BASE}/ipfs/revoke`;
+
+// Identity - Create
+export const CREATE_IDENTITY = `${API_BASE}/identity/create`;
+export const CREATE_IDENTITY_SIGNED = `${API_BASE}/identity/create-signed`;
 
 // Identity - Profile
 export const LINK_PROFILE = `${API_BASE}/identity/profile`;
@@ -12,21 +18,24 @@ export const GET_ATTRIBUTE = (identity, nameHash) =>
 
 // Identity - Owner
 export const GET_OWNER = (identity) => `${API_BASE}/identity/owner/${identity}`;
-
 export const CHANGE_OWNER = `${API_BASE}/identity/change-owner`;
 export const CHANGE_OWNER_SIGNED = `${API_BASE}/identity/change-owner-signed`;
+
 // Identity - Delegate
 export const ADD_DELEGATE = `${API_BASE}/identity/delegate/add`;
 export const ADD_DELEGATE_SIGNED = `${API_BASE}/identity/delegate/add-signed`;
 export const REVOKE_DELEGATE = `${API_BASE}/identity/delegate/revoke`;
 export const REVOKE_DELEGATE_SIGNED = `${API_BASE}/identity/delegate/revoke-signed`;
+
 // Identity - Attribute
 export const SET_ATTRIBUTE = `${API_BASE}/identity/attribute/set`;
 export const SET_ATTRIBUTE_SIGNED = `${API_BASE}/identity/attribute/set-signed`;
 export const REVOKE_ATTRIBUTE = `${API_BASE}/identity/attribute/revoke`;
 export const REVOKE_ATTRIBUTE_SIGNED = `${API_BASE}/identity/attribute/revoke-signed`;
+
 // Identity - Hashes
 export const CREATE_HASHES = `${API_BASE}/identity/hashes`;
+
 // Identity - Search
 export const GET_IDENTITY = (identity) => `${API_BASE}/identity/identity/${identity}`;
 export const GET_IDENTITY_BY_OWNER = (owner) => `${API_BASE}/identity/by-owner/${owner}`;
@@ -53,7 +62,3 @@ export const GET_IDENTITY_BY_OWNER_AND_DELEGATE_AND_PROFILE = (owner, delegate, 
   `${API_BASE}/identity/by-owner-and-delegate-and-profile/${owner}/${delegate}/${cid}`;
 export const GET_IDENTITY_BY_OWNER_AND_DELEGATE_AND_ATTRIBUTE = (owner, delegate, name, value) =>
   `${API_BASE}/identity/by-owner-and-delegate-and-attribute/${owner}/${delegate}/${name}/${value}`;
-// Identity - Owner and Profile
-
-
-
