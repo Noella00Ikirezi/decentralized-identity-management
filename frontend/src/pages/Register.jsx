@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ethers } from 'ethers';
 import './Register.css';
-import { getAttribute } from '../utils/identityService';
+import { getAttribute } from '../services/identityService';
 
 const Register = () => {
   const [account, setAccount] = useState(null);

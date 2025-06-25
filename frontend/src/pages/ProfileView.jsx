@@ -4,7 +4,7 @@ import { useParams } from 'react-router-dom';
 import { ethers } from 'ethers';
 import './Profile.css';
 import { FaUserCircle } from 'react-icons/fa';
-import { getAttribute } from '../utils/identityService';
+import { getAttribute } from '../services/identityService';
 import { GET_IPFS } from '../api/api';
 
 const ProfileView = () => {

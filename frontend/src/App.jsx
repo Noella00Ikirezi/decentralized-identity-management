@@ -1,6 +1,6 @@
 import React from 'react';
 import './App.css';
-import AppRoutes from './routes/AppRoutes';
+import AppRoutes from './components/AppRoutes';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 

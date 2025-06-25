@@ -1,5 +1,5 @@
 // src/api/api.js
-export const API_BASE = 'http://localhost:5000';
+export const API_BASE = process.env.API_BASE ;
 
 // IPFS
 export const UPLOAD_IPFS = `${API_BASE}/ipfs/upload`;
