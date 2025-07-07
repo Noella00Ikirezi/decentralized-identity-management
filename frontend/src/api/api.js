@@ -1,64 +1,105 @@
-// src/api/api.js
-export const API_BASE = 'http://localhost:5000';
+// === api/api.js ===
 
-// IPFS
-export const UPLOAD_IPFS = `${API_BASE}/ipfs/upload`;
-export const GET_IPFS = (cid) => `${API_BASE}/ipfs/content/${cid}`;
-export const GET_DOCUMENTS = (address) => `${API_BASE}/ipfs/list/${address}`;
-export const REVOKE_DOCUMENT = `${API_BASE}/ipfs/revoke`;
+const API_BASE = 'http://localhost:5000';
 
-// Identity - Create
-export const CREATE_IDENTITY = `${API_BASE}/identity/create`;
-export const CREATE_IDENTITY_SIGNED = `${API_BASE}/identity/create-signed`;
+// === IPFS ===
+export const uploadFileToIPFS = (file) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  return fetch(`${API_BASE}/ipfs/upload`, {
+    method: 'POST',
+    body: formData,
+  }).then(res => res.json());
+};
 
-// Identity - Profile
-export const LINK_PROFILE = `${API_BASE}/identity/profile`;
-export const GET_ATTRIBUTE = (identity, nameHash) =>
-  `${API_BASE}/identity/attribute/${identity}/${nameHash}`;
+export const uploadProfileJSON = (identity, profile) => {
+  return fetch(`${API_BASE}/ipfs/profile/upload`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ identity, profile })
+  }).then(res => res.json());
+};
 
-// Identity - Owner
-export const GET_OWNER = (identity) => `${API_BASE}/identity/owner/${identity}`;
-export const CHANGE_OWNER = `${API_BASE}/identity/change-owner`;
-export const CHANGE_OWNER_SIGNED = `${API_BASE}/identity/change-owner-signed`;
+export const getProfile = (identity) => fetch(`${API_BASE}/ipfs/profile/${identity}`).then(res => res.json());
+export const deleteProfile = (identity) => fetch(`${API_BASE}/ipfs/profile`, {
+  method: 'DELETE',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ identity })
+}).then(res => res.json());
 
-// Identity - Delegate
-export const ADD_DELEGATE = `${API_BASE}/identity/delegate/add`;
-export const ADD_DELEGATE_SIGNED = `${API_BASE}/identity/delegate/add-signed`;
-export const REVOKE_DELEGATE = `${API_BASE}/identity/delegate/revoke`;
-export const REVOKE_DELEGATE_SIGNED = `${API_BASE}/identity/delegate/revoke-signed`;
+// === Documents ===
+export const addDocument = (doc) => fetch(`${API_BASE}/documents/add`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(doc)
+}).then(res => res.json());
 
-// Identity - Attribute
-export const SET_ATTRIBUTE = `${API_BASE}/identity/attribute/set`;
-export const SET_ATTRIBUTE_SIGNED = `${API_BASE}/identity/attribute/set-signed`;
-export const REVOKE_ATTRIBUTE = `${API_BASE}/identity/attribute/revoke`;
-export const REVOKE_ATTRIBUTE_SIGNED = `${API_BASE}/identity/attribute/revoke-signed`;
+export const revokeDocument = (docId) => fetch(`${API_BASE}/documents/revoke`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ docId })
+}).then(res => res.json());
 
-// Identity - Hashes
-export const CREATE_HASHES = `${API_BASE}/identity/hashes`;
+export const shareDocument = (docId, recipient, duration) => fetch(`${API_BASE}/documents/share`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ docId, recipient, duration })
+}).then(res => res.json());
 
-// Identity - Search
-export const GET_IDENTITY = (identity) => `${API_BASE}/identity/identity/${identity}`;
-export const GET_IDENTITY_BY_OWNER = (owner) => `${API_BASE}/identity/by-owner/${owner}`;
-export const GET_IDENTITY_BY_DELEGATE = (delegate) => `${API_BASE}/identity/by-delegate/${delegate}`;
-export const GET_IDENTITY_BY_ATTRIBUTE = (name, value) => `${API_BASE}/identity/by-attribute/${name}/${value}`;
-export const GET_IDENTITY_BY_PROFILE = (cid) => `${API_BASE}/identity/by-profile/${cid}`;
-export const GET_IDENTITY_BY_OWNER_AND_PROFILE = (owner, cid) =>
-  `${API_BASE}/identity/by-owner-and-profile/${owner}/${cid}`;
-export const GET_IDENTITY_BY_OWNER_AND_ATTRIBUTE = (owner, name, value) =>
-  `${API_BASE}/identity/by-owner-and-attribute/${owner}/${name}/${value}`;
-export const GET_IDENTITY_BY_DELEGATE_AND_PROFILE = (delegate, cid) =>
-  `${API_BASE}/identity/by-delegate-and-profile/${delegate}/${cid}`;
-export const GET_IDENTITY_BY_DELEGATE_AND_ATTRIBUTE = (delegate, name, value) =>
-  `${API_BASE}/identity/by-delegate-and-attribute/${delegate}/${name}/${value}`;
-export const GET_IDENTITY_BY_PROFILE_AND_ATTRIBUTE = (cid, name, value) =>
-  `${API_BASE}/identity/by-profile-and-attribute/${cid}/${name}/${value}`;
-export const GET_IDENTITY_BY_OWNER_AND_PROFILE_AND_ATTRIBUTE = (owner, cid, name, value) =>
-  `${API_BASE}/identity/by-owner-and-profile-and-attribute/${owner}/${cid}/${name}/${value}`;
-export const GET_IDENTITY_BY_DELEGATE_AND_PROFILE_AND_ATTRIBUTE = (delegate, cid, name, value) =>
-  `${API_BASE}/identity/by-delegate-and-profile-and-attribute/${delegate}/${cid}/${name}/${value}`;
-export const GET_IDENTITY_BY_OWNER_AND_DELEGATE = (owner, delegate) =>
-  `${API_BASE}/identity/by-owner-and-delegate/${owner}/${delegate}`;
-export const GET_IDENTITY_BY_OWNER_AND_DELEGATE_AND_PROFILE = (owner, delegate, cid) =>
-  `${API_BASE}/identity/by-owner-and-delegate-and-profile/${owner}/${delegate}/${cid}`;
-export const GET_IDENTITY_BY_OWNER_AND_DELEGATE_AND_ATTRIBUTE = (owner, delegate, name, value) =>
-  `${API_BASE}/identity/by-owner-and-delegate-and-attribute/${owner}/${delegate}/${name}/${value}`;
+export const revokeShare = (docId, recipient) => fetch(`${API_BASE}/documents/revoke-share`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ docId, recipient })
+}).then(res => res.json());
+
+export const canAccess = (owner, docId) => fetch(`${API_BASE}/documents/access/${owner}/${docId}`).then(res => res.json());
+export const getMyDocuments = () => fetch(`${API_BASE}/documents/my`).then(res => res.json());
+export const getSharedAccesses = (docId) => fetch(`${API_BASE}/documents/shared/${docId}`).then(res => res.json());
+
+// === Identity ===
+export const getOwner = (identity) => fetch(`${API_BASE}/identity/owner/${identity}`).then(res => res.json());
+export const changeOwner = (identity, newOwner) => fetch(`${API_BASE}/identity/owner/change`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ identity, newOwner })
+}).then(res => res.json());
+
+export const changeOwnerSigned = (data) => fetch(`${API_BASE}/identity/owner/change-signed`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(data)
+}).then(res => res.json());
+
+export const addDelegate = (data) => fetch(`${API_BASE}/identity/delegate/add`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(data)
+}).then(res => res.json());
+
+export const revokeDelegate = (data) => fetch(`${API_BASE}/identity/delegate/revoke`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(data)
+}).then(res => res.json());
+
+export const setAttribute = (data) => fetch(`${API_BASE}/identity/attribute/set`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(data)
+}).then(res => res.json());
+
+export const revokeAttribute = (data) => fetch(`${API_BASE}/identity/attribute/revoke`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(data)
+}).then(res => res.json());
+
+export const getAttributes = (identity) => fetch(`${API_BASE}/identity/attributes/${identity}`).then(res => res.json());
+export const getAttribute = (identity, name) => fetch(`${API_BASE}/identity/attribute/${identity}/${name}`).then(res => res.json());
+
+export const getChainId = () => fetch(`${API_BASE}/identity/chain-id`).then(res => res.json());
+export const createChangeOwnerHash = (identity, newOwner) => fetch(`${API_BASE}/identity/hash/owner-change`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ identity, newOwner })
+}).then(res => res.json());

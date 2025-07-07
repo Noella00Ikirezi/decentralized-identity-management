@@ -1,4 +1,4 @@
-// backend/controllers/ipfs.controller.js
+// === ipfs.controller.js ===
 
 import { create } from 'kubo-rpc-client';
 import { contract } from '../utils/ethereum.js';
@@ -6,16 +6,14 @@ import { fileTypeFromBuffer } from 'file-type';
 import { Buffer } from 'buffer';
 import { ethers } from 'ethers';
 
-// Initialise le client IPFS local
 const ipfs = create({ url: 'http://127.0.0.1:5001/api/v0' });
 
 // 📤 Upload d'un fichier ou contenu vers IPFS + enregistrement dans le smart contract
 export const uploadToIPFSAndLink = async (req, res) => {
   try {
     const { file } = req;
-    const { content } = req.body;
+    const { content, expiresIn = 0 } = req.body;
 
-    // 🔍 Étape 1 : convertir en Buffer
     let buffer;
     if (file && file.buffer) {
       buffer = file.buffer;
@@ -25,21 +23,16 @@ export const uploadToIPFSAndLink = async (req, res) => {
       return res.status(400).json({ error: 'Aucun fichier ni contenu fourni.' });
     }
 
-    // 📎 Étape 2 : détection du type MIME (optionnelle mais utile)
     const fileType = await fileTypeFromBuffer(buffer);
     const mimeType = fileType?.mime || 'application/octet-stream';
 
-    // 📤 Étape 3 : ajout dans IPFS local
     const result = await ipfs.add(buffer);
     const cid = result.cid.toString();
+    console.log(`📁 Fichier ajouté à IPFS : ${cid}`);
 
-    console.log(`✅ Fichier ajouté à IPFS : ${cid}`);
-
-    // 🔐 Étape 4 : Enregistrement dans le smart contract (optionnel)
-    const tx = await contract.connect(contract.signer).addDocument(cid, mimeType);
+    const tx = await contract.addDocument(cid, mimeType, expiresIn);
     await tx.wait();
 
-    // ✅ Étape 5 : Réponse envoyée au client
     res.json({
       success: true,
       cid,
@@ -49,22 +42,91 @@ export const uploadToIPFSAndLink = async (req, res) => {
     });
   } catch (err) {
     console.error('❌ Erreur IPFS local + blockchain :', err);
-    res.status(500).json({ error: err.message || 'Erreur interne' });
-  }
-};
-
-// 📥 Liste des documents d'une adresse
-export const getDocuments = async (req, res) => {
-  try {
-    const { address } = req.params;
-    const docs = await contract.connect(contract.signer).getDocumentsByOwner(address);
-    res.json(docs);
-  } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
-// 📥 Récupération d’un fichier IPFS via CID
+// 📤 Upload d’un profil utilisateur en JSON (setAttribute avec key "profile")
+export const uploadProfileToIPFS = async (req, res) => {
+  try {
+    const { identity, profile } = req.body;
+    if (!identity || !profile) {
+      return res.status(400).json({ error: 'Champs requis manquants.' });
+    }
+
+    const buffer = Buffer.from(JSON.stringify(profile));
+    const result = await ipfs.add(buffer);
+    const cid = result.cid.toString();
+
+    const nameHash = ethers.utils.keccak256(ethers.utils.toUtf8Bytes('profile'));
+    const valueBytes = ethers.utils.toUtf8Bytes(cid);
+
+    const tx = await contract.setAttribute(identity, nameHash, valueBytes, 0);
+    await tx.wait();
+
+    res.json({ success: true, cid, txHash: tx.hash });
+  } catch (err) {
+    console.error('❌ Erreur uploadProfileToIPFS:', err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// 📥 Lire le profil JSON IPFS à partir de l’attribut 'profile'
+export const getProfileFromIPFS = async (req, res) => {
+  try {
+    const { identity } = req.params;
+    const nameHash = ethers.utils.keccak256(ethers.utils.toUtf8Bytes('profile'));
+    const attribute = await contract.getAttribute(identity, nameHash);
+    const cid = ethers.utils.toUtf8String(attribute);
+
+    const stream = ipfs.cat(cid);
+    let content = Buffer.alloc(0);
+    for await (const chunk of stream) {
+      content = Buffer.concat([content, chunk]);
+    }
+
+    res.setHeader('Content-Type', 'application/json');
+    res.send(content.toString());
+  } catch (err) {
+    console.error('❌ Erreur getProfileFromIPFS:', err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// 🧽 Révocation du profil utilisateur (attribut profile)
+export const deleteProfileFromBlockchain = async (req, res) => {
+  try {
+    const { identity } = req.body;
+    if (!identity) {
+      return res.status(400).json({ error: 'Identity manquant.' });
+    }
+
+    const nameHash = ethers.utils.keccak256(ethers.utils.toUtf8Bytes('profile'));
+    const attribute = await contract.getAttribute(identity, nameHash);
+    const value = attribute;
+    const tx = await contract.revokeAttribute(identity, nameHash, value);
+    await tx.wait();
+
+    res.json({ success: true, txHash: tx.hash });
+  } catch (err) {
+    console.error('❌ Erreur deleteProfileFromBlockchain:', err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// 📜 Liste des documents d'une adresse
+export const getDocuments = async (req, res) => {
+  try {
+    const { address } = req.params;
+    const docs = await contract.getDocumentsByOwner(address);
+    res.json(docs);
+  } catch (err) {
+    console.error('❌ Erreur getDocuments:', err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// 📂 Récupération d’un fichier IPFS via CID
 export const getFromIPFS = async (req, res) => {
   try {
     const { cid } = req.params;
@@ -81,44 +143,20 @@ export const getFromIPFS = async (req, res) => {
     res.setHeader('Content-Type', mimeType);
     res.send(content);
   } catch (err) {
-    console.error('❌ Erreur lors de la récupération depuis IPFS :', err);
+    console.error('❌ Erreur récupération IPFS :', err);
     res.status(500).json({ error: err.message });
   }
 };
 
-// 🔒 Révocation d’un document (mock si non implémenté sur le contrat)
+// ❌ Révocation d’un document IPFS
 export const revokeDocument = async (req, res) => {
   try {
     const { docId } = req.body;
-    const tx = await contract.connect(contract.signer).revokeDocument(parseInt(docId));
+    const tx = await contract.revokeDocument(parseInt(docId));
     await tx.wait();
     res.json({ success: true, txHash: tx.hash });
   } catch (err) {
+    console.error('❌ Erreur revokeDocument:', err);
     res.status(500).json({ error: err.message });
   }
 };
-
-// 📤 Upload d’un profil utilisateur en JSON
-export const uploadProfileToIPFS = async (req, res) => {
-  try {
-    const { identity, profile } = req.body;
-    if (!identity || !profile) {
-      return res.status(400).json({ error: 'Champs requis manquants.' });
-    }
-
-    const buffer = Buffer.from(JSON.stringify(profile));
-    const result = await ipfs.add(buffer);
-    const cid = result.cid.toString();
-
-    const nameHash = ethers.utils.keccak256(ethers.utils.toUtf8Bytes('profile'));
-    const valueBytes = ethers.utils.toUtf8Bytes(cid);
-
-    const tx = await contract.connect(contract.signer).setAttribute(identity, nameHash, valueBytes, 0);
-    await tx.wait();
-
-    res.json({ success: true, cid, txHash: tx.hash });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-

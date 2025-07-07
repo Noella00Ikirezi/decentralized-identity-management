@@ -1,120 +1,95 @@
-// backend/controllers/documents.controller.js
+// === documents.controller.js ===
 
-import { create } from 'kubo-rpc-client';
 import { contract } from '../utils/ethereum.js';
-import { fileTypeFromBuffer } from 'file-type';
-import { Buffer } from 'buffer';
+import { ethers } from 'ethers';
 
-const ipfs = create({ url: 'http://127.0.0.1:5001/api/v0' });
-
-// ⬆️ Upload d'un document vers IPFS + enregistrement sur la blockchain
-export const uploadDocument = async (req, res) => {
+// 📄 Ajout d’un document IPFS
+export const addDocument = async (req, res) => {
   try {
-    console.log('📥 [UPLOAD] Requête reçue');
-
-    const { file } = req;
-    if (!file || !file.buffer) {
-      console.warn('⚠️ Aucun fichier fourni dans la requête');
-      return res.status(400).json({ error: 'Aucun fichier fourni.' });
-    }
-
-    const buffer = file.buffer;
-    console.log(`📦 Taille du buffer : ${buffer.length} octets`);
-
-    const type = await fileTypeFromBuffer(buffer);
-    const mimeType = type?.mime || 'application/octet-stream';
-    console.log(`🧾 Type MIME détecté : ${mimeType}`);
-
-    const result = await ipfs.add(buffer);
-    const cid = result.cid.toString();
-    console.log(`✅ Fichier ajouté à IPFS : ${cid}`);
-
-    const tx = await contract.connect(contract.signer).addDocument(cid, mimeType);
+    const { cid, mimeType, expiresIn = 0 } = req.body;
+    const tx = await contract.addDocument(cid, mimeType, expiresIn);
     await tx.wait();
-    console.log(`⛓ Document enregistré dans le smart contract : ${tx.hash}`);
-
-    res.json({
-      success: true,
-      cid,
-      mimeType,
-      size: buffer.length,
-      txHash: tx.hash
-    });
+    console.log(`📤 Document ajouté : ${cid}`);
+    res.json({ success: true, txHash: tx.hash });
   } catch (err) {
-    console.error('❌ Erreur lors de l’upload de document :', err);
+    console.error('❌ Erreur addDocument:', err);
     res.status(500).json({ error: err.message });
   }
 };
 
-// 🔎 Récupération du contenu d'un document par CID
-export const getDocument = async (req, res) => {
-  try {
-    const { cid } = req.params;
-    console.log(`📤 [GET] Lecture du document CID: ${cid}`);
-
-    const stream = ipfs.cat(cid);
-    const chunks = [];
-    for await (const chunk of stream) {
-      chunks.push(chunk);
-    }
-
-    const content = Buffer.concat(chunks);
-    console.log(`📄 Document récupéré depuis IPFS (${content.length} octets)`);
-
-    const type = await fileTypeFromBuffer(content);
-    res.setHeader('Content-Type', type?.mime || 'application/octet-stream');
-    res.send(content);
-  } catch (err) {
-    console.error('❌ Erreur lors de la lecture IPFS :', err);
-    res.status(500).json({ error: 'Impossible de lire le fichier IPFS' });
-  }
-};
-
-// ❌ Révocation d'un document
+// ❌ Révocation d’un document IPFS
 export const revokeDocument = async (req, res) => {
   try {
     const { docId } = req.body;
-    console.log(`🗑️ Révocation du document ID: ${docId}`);
-
-    const tx = await contract.connect(contract.signer).revokeDocument(parseInt(docId));
+    const tx = await contract.revokeDocument(parseInt(docId));
     await tx.wait();
-
-    console.log(`✅ Document révoqué : TX Hash = ${tx.hash}`);
+    console.log(`🗑️ Document révoqué : ${docId}`);
     res.json({ success: true, txHash: tx.hash });
   } catch (err) {
-    console.error('❌ Erreur lors de la révocation :', err);
+    console.error('❌ Erreur revokeDocument:', err);
     res.status(500).json({ error: err.message });
   }
 };
 
-// 📄 Récupération des métadonnées d’un document
-export const getDocumentMetadata = async (req, res) => {
+// 🤝 Partage d’un document IPFS avec expiration
+export const shareDocument = async (req, res) => {
   try {
-    const { cid } = req.params;
-    console.log(`📑 Métadonnées pour CID : ${cid}`);
-
-    const metadata = await contract.getDocumentMetadata(cid);
-    console.log('🧾 Métadonnées récupérées :', metadata);
-
-    res.json(metadata);
+    const { docId, recipient, duration } = req.body;
+    const tx = await contract.shareDocument(parseInt(docId), recipient, duration);
+    await tx.wait();
+    console.log(`🔗 Document ${docId} partagé avec ${recipient}`);
+    res.json({ success: true, txHash: tx.hash });
   } catch (err) {
-    console.error('❌ Erreur lors de la récupération des métadonnées :', err);
+    console.error('❌ Erreur shareDocument:', err);
     res.status(500).json({ error: err.message });
   }
 };
 
-// 📂 Liste des documents associés à une adresse
-export const getDocumentsByAddress = async (req, res) => {
+// 🚫 Révocation d’un partage de document
+export const revokeSharedAccess = async (req, res) => {
   try {
-    const { address } = req.params;
-    console.log(`📂 Récupération des documents pour l'adresse : ${address}`);
+    const { docId, recipient } = req.body;
+    const tx = await contract.revokeSharedAccess(parseInt(docId), recipient);
+    await tx.wait();
+    console.log(`🔒 Partage du document ${docId} révoqué pour ${recipient}`);
+    res.json({ success: true, txHash: tx.hash });
+  } catch (err) {
+    console.error('❌ Erreur revokeSharedAccess:', err);
+    res.status(500).json({ error: err.message });
+  }
+};
 
-    const docs = await contract.getDocumentsByOwner(address);
-    console.log(`📋 ${docs.length} document(s) trouvés pour ${address}`);
+// 🔍 Vérifier si msg.sender peut accéder à un document
+export const canAccess = async (req, res) => {
+  try {
+    const { owner, docId } = req.params;
+    const access = await contract.canAccess(owner, parseInt(docId));
+    res.json({ access });
+  } catch (err) {
+    console.error('❌ Erreur canAccess:', err);
+    res.status(500).json({ error: err.message });
+  }
+};
 
+// 📥 Récupérer les documents de l’utilisateur connecté
+export const getMyDocuments = async (req, res) => {
+  try {
+    const docs = await contract.getMyDocuments();
     res.json(docs);
   } catch (err) {
-    console.error('❌ Erreur lors de la récupération des documents :', err);
+    console.error('❌ Erreur getMyDocuments:', err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// 📜 Récupérer les accès partagés d’un document
+export const getSharedAccesses = async (req, res) => {
+  try {
+    const { docId } = req.params;
+    const accesses = await contract.getSharedAccesses(parseInt(docId));
+    res.json(accesses);
+  } catch (err) {
+    console.error('❌ Erreur getSharedAccesses:', err);
     res.status(500).json({ error: err.message });
   }
 };

@@ -1,3 +1,5 @@
+// File: backend/utils/ipfs.js
+
 import axios from 'axios';
 import dotenv from 'dotenv';
 import FormData from 'form-data';
@@ -56,6 +58,4 @@ export const pinJSONToIPFS = async (json) => {
   return await pinFileToIPFS(buffer, 'data.json');
 };
 
-// ⬇️ Accès public via IPFS local gateway
-export const getPinataURL = (cid) => `http://127.0.0.1:8080/ipfs/${cid}`;
-export const getPinataPrivateURL = (cid) => getPinataURL(cid);
+

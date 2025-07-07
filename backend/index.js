@@ -1,3 +1,5 @@
+// === index.js ===
+
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
@@ -5,28 +7,27 @@ import ipfsRoutes from './routes/ipfs.routes.js';
 import identityRoutes from './routes/identity.routes.js';
 import documentsRoutes from './routes/documents.routes.js';
 
+// 🌍 Initialisation
 dotenv.config();
-
 const app = express();
+const PORT = process.env.PORT || 5000;
 
-// 🔓 Autoriser le frontend à accéder à l’API
+// 🔓 CORS pour connexion frontend
 app.use(cors({
   origin: 'http://localhost:5173',
   credentials: true,
 }));
 
-// ⬇️ Gérer les requêtes volumineuses
-app.use(express.json({ limit: '5mb' }));
-app.use(express.urlencoded({ extended: true, limit: '5mb' }));
+// 🧠 Body parser
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// 📦 Enregistrement des routes
+// 📦 Routes centralisées
 app.use('/ipfs', ipfsRoutes);
 app.use('/identity', identityRoutes);
 app.use('/documents', documentsRoutes);
 
-
-
-const PORT = process.env.PORT || 5000;
+// 🚀 Lancement serveur
 app.listen(PORT, () => {
-  console.log(`🚀 Backend running on http://localhost:${PORT}`);
+  console.log(`✅ API backend opérationnelle sur http://localhost:${PORT}`);
 });

@@ -1,32 +1,23 @@
-// backend/routes/ipfs.routes.js
-
 import express from 'express';
 import multer from 'multer';
-
-import {
-  uploadToIPFSAndLink,
-  getFromIPFS,
-  getDocuments,
-  revokeDocument,
-  uploadProfileToIPFS
-} from '../controllers/ipfs.controller.js';
+import * as ipfsCtrl from '../controllers/ipfs.controller.js';
 
 const router = express.Router();
 const upload = multer();
 
-// 📁 Upload d’un fichier vers IPFS local + enregistrement smart contract
-router.post('/upload', upload.single('file'), uploadToIPFSAndLink);
+// === Upload fichier ou JSON vers IPFS + SC ===
+router.post('/upload', upload.single('file'), ipfsCtrl.uploadToIPFSAndLink);
+router.post('/profile/upload', express.json(), ipfsCtrl.uploadProfileToIPFS);
 
-// 📂 Récupération d’un fichier depuis IPFS par CID
-router.get('/content/:cid', getFromIPFS);
+// === Consultation ===
+router.get('/list/:address', ipfsCtrl.getDocuments);
+router.get('/content/:cid', ipfsCtrl.getFromIPFS);
 
-// 📜 Récupération des documents liés à une adresse
-router.get('/list/:address', getDocuments);
+// === Révocation document via IPFS ===
+router.post('/revoke', ipfsCtrl.revokeDocument);
 
-// ❌ Révocation d’un document (si pris en charge par le smart contract)
-router.post('/revoke', express.json(), revokeDocument);
-
-// 👤 Upload d’un profil utilisateur (JSON → IPFS → smart contract)
-router.post('/profile/upload', express.json(), uploadProfileToIPFS);
+//=== Profile  ===
+router.get('/profile/:identity', ipfsCtrl.getProfileFromIPFS);
+router.delete('/profile', express.json(), ipfsCtrl.deleteProfileFromBlockchain);
 
 export default router;

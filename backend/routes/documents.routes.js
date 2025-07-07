@@ -1,31 +1,19 @@
-// backend/routes/documents.routes.js
-
 import express from 'express';
-import multer from 'multer';
-import {
-  uploadDocument,
-  getDocument,
-  revokeDocument,
-  getDocumentMetadata,
-  getDocumentsByAddress
-} from '../controllers/documents.controller.js';
+import * as docCtrl from '../controllers/documents.controller.js';
 
 const router = express.Router();
-const upload = multer();
 
-// 📁 Upload d’un fichier vers IPFS + enregistrement dans le smart contract
-router.post('/upload', upload.single('file'), uploadDocument);
+// === Documents ===
+router.post('/add', docCtrl.addDocument);
+router.post('/revoke', docCtrl.revokeDocument);
 
-// 📂 Récupération du contenu du fichier IPFS
-router.get('/content/:cid', getDocument);
+// === Partage ===
+router.post('/share', docCtrl.shareDocument);
+router.post('/revoke-share', docCtrl.revokeSharedAccess);
 
-// ❌ Révocation du document sur la blockchain
-router.post('/revoke', express.json(), revokeDocument);
-
-// 🧾 Récupération des métadonnées du document
-router.get('/metadata/:cid', getDocumentMetadata);
-
-// 📜 Liste des documents liés à une adresse Ethereum
-router.get('/by-address/:address', getDocumentsByAddress);
+// === Accès & Consultation ===
+router.get('/access/:owner/:docId', docCtrl.canAccess);
+router.get('/my', docCtrl.getMyDocuments);
+router.get('/shared/:docId', docCtrl.getSharedAccesses);
 
 export default router;
