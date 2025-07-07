@@ -1,95 +1,20 @@
-// backend/controllers/identity.controller.js (refacto ethers.js)
+// backend/controllers/identity.controller.js (simplifié pour profil JSON + documents IPFS)
+
 import { contract } from '../utils/ethereum.js';
 import { ethers } from 'ethers';
+import { create } from 'kubo-rpc-client';
+const ipfs = create({ url: 'http://127.0.0.1:5001/api/v0' });
 
-const toDelegateTypeHash = (delegateType) => ethers.utils.keccak256(ethers.utils.toUtf8Bytes(delegateType));
-
-export const getOwner = async (req, res) => {
-  try {
-    const { identity } = req.params;
-    const owner = await contract.getOwner(identity);
-    res.json({ identity, owner });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-
-export const changeOwner = async (req, res) => {
-  try {
-    const { identity, newOwner } = req.body;
-    const tx = await contract.changeOwner(identity, newOwner);
-    await tx.wait();
-    res.json({ success: true, txHash: tx.hash });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-
-export const changeOwnerSigned = async (req, res) => {
-  try {
-    const { identity, newOwner, v, r, s } = req.body;
-    const tx = await contract.changeOwnerSigned(identity, newOwner, v, r, s);
-    await tx.wait();
-    res.json({ success: true, txHash: tx.hash });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-
-export const addDelegate = async (req, res) => {
-  try {
-    const { identity, delegate, delegateType, expiresIn } = req.body;
-    const typeHash = toDelegateTypeHash(delegateType);
-    const tx = await contract.addDelegate(identity, typeHash, delegate, expiresIn);
-    await tx.wait();
-    res.json({ success: true, txHash: tx.hash });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-
-export const addDelegateSigned = async (req, res) => {
-  try {
-    const { identity, delegate, delegateType, expiresIn, v, r, s } = req.body;
-    const typeHash = toDelegateTypeHash(delegateType);
-    const tx = await contract.addDelegateSigned(identity, typeHash, delegate, expiresIn, v, r, s);
-    await tx.wait();
-    res.json({ success: true, txHash: tx.hash });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-
-export const revokeDelegate = async (req, res) => {
-  try {
-    const { identity, delegate, delegateType } = req.body;
-    const typeHash = toDelegateTypeHash(delegateType);
-    const tx = await contract.revokeDelegate(identity, typeHash, delegate);
-    await tx.wait();
-    res.json({ success: true, txHash: tx.hash });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-
-export const revokeDelegateSigned = async (req, res) => {
-  try {
-    const { identity, delegate, delegateType, v, r, s } = req.body;
-    const typeHash = toDelegateTypeHash(delegateType);
-    const tx = await contract.revokeDelegateSigned(identity, typeHash, delegate, v, r, s);
-    await tx.wait();
-    res.json({ success: true, txHash: tx.hash });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-
+// 🔐 Ajout ou mise à jour d'un attribut (CID ou autre)
 export const setAttribute = async (req, res) => {
   try {
-    const { identity, name, value, expiresIn } = req.body;
+    const { identity, name, value, expiresIn = 0 } = req.body;
+    if (!identity || !name || !value) {
+      return res.status(400).json({ error: 'Champs requis manquants.' });
+    }
     const nameHash = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(name));
-    const valueBytes = ethers.utils.arrayify(value);
-    const tx = await contract.setAttribute(identity, nameHash, valueBytes, expiresIn);
+    const valueBytes = ethers.utils.toUtf8Bytes(value);
+    const tx = await contract.connect(contract.signer).setAttribute(identity, nameHash, valueBytes, expiresIn);
     await tx.wait();
     res.json({ success: true, txHash: tx.hash });
   } catch (err) {
@@ -97,25 +22,13 @@ export const setAttribute = async (req, res) => {
   }
 };
 
-export const setAttributeSigned = async (req, res) => {
-  try {
-    const { identity, name, value, expiresIn, v, r, s } = req.body;
-    const nameHash = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(name));
-    const valueBytes = ethers.utils.arrayify(value);
-    const tx = await contract.setAttributeSigned(identity, nameHash, valueBytes, expiresIn, v, r, s);
-    await tx.wait();
-    res.json({ success: true, txHash: tx.hash });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-
+// ❌ Révocation d'un attribut
 export const revokeAttribute = async (req, res) => {
   try {
     const { identity, name, value } = req.body;
     const nameHash = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(name));
-    const valueBytes = ethers.utils.arrayify(value);
-    const tx = await contract.revokeAttribute(identity, nameHash, valueBytes);
+    const valueBytes = ethers.utils.toUtf8Bytes(value);
+    const tx = await contract.connect(contract.signer).revokeAttribute(identity, nameHash, valueBytes);
     await tx.wait();
     res.json({ success: true, txHash: tx.hash });
   } catch (err) {
@@ -123,214 +36,105 @@ export const revokeAttribute = async (req, res) => {
   }
 };
 
-export const revokeAttributeSigned = async (req, res) => {
+// 🔍 Récupérer les attributs d'une identité (ex : profil)
+export const getAttributes = async (req, res) => {
   try {
-    const { identity, name, value, v, r, s } = req.body;
-    const nameHash = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(name));
-    const valueBytes = ethers.utils.arrayify(value);
-    const tx = await contract.revokeAttributeSigned(identity, nameHash, valueBytes, v, r, s);
-    await tx.wait();
-    res.json({ success: true, txHash: tx.hash });
+    const { identity } = req.params;
+    const attributes = await contract.getAttributes(identity);
+    res.json(attributes);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
+// 📎 Lier un profil JSON (CID) à l'identité
 export const linkProfileToIdentity = async (req, res) => {
   try {
     const { identity, cid, expiresIn = 0 } = req.body;
-    const name = 'profile';
-    const nameHash = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(name));
+    const nameHash = ethers.utils.keccak256(ethers.utils.toUtf8Bytes('profile'));
     const valueBytes = ethers.utils.toUtf8Bytes(cid);
-
-    const tx = await contract.setAttribute(identity, nameHash, valueBytes, expiresIn);
+    const tx = await contract.connect(contract.signer).setAttribute(identity, nameHash, valueBytes, expiresIn);
     await tx.wait();
-
     res.json({ success: true, txHash: tx.hash });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
-export const createHashes = async (req, res) => {
+export const getProfile = async (req, res) => {
   try {
-    const { method, identity, params } = req.body;
-    let hash;
-    switch (method) {
-      case 'changeOwner':
-        hash = await contract.callStatic.createChangeOwnerHash(identity, params.newOwner);
-        break;
-      case 'addDelegate':
-        hash = await contract.callStatic.createAddDelegateHash(identity, toDelegateTypeHash(params.delegateType), params.delegate, params.expiresIn);
-        break;
-      case 'revokeDelegate':
-        hash = await contract.callStatic.createRevokeDelegateHash(identity, toDelegateTypeHash(params.delegateType), params.delegate);
-        break;
-      case 'setAttribute':
-        hash = await contract.callStatic.createSetAttributeHash(
-          identity,
-          ethers.utils.keccak256(ethers.utils.toUtf8Bytes(params.name)),
-          ethers.utils.arrayify(params.value),
-          params.expiresIn
-        );
-        break;
-      case 'revokeAttribute':
-        hash = await contract.callStatic.createRevokeAttributeHash(
-          identity,
-          ethers.utils.keccak256(ethers.utils.toUtf8Bytes(params.name)),
-          ethers.utils.arrayify(params.value)
-        );
-        break;
-      default:
-        return res.status(400).json({ error: 'Méthode non prise en charge' });
-    }
-    res.json({ method, hash });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-export const getIdentity = async (req, res) => {
-  try {
-    const { identity } = req.params;
-    const owner = await contract.getOwner(identity);
-    const delegates = await contract.getDelegates(identity);
-    const attributes = await contract.getAttributes(identity);
+    const { address } = req.params;
+    const nameHash = ethers.utils.keccak256(ethers.utils.toUtf8Bytes('profile'));
+    const valueBytes = await contract.getAttribute(address, nameHash);
+    const cid = ethers.utils.toUtf8String(valueBytes);
 
-    res.json({ identity, owner, delegates, attributes });
+    const response = await fetch(`http://localhost:8080/ipfs/${cid}`);
+    if (!response.ok) throw new Error('Fichier IPFS introuvable');
+
+    const json = await response.json();
+    res.json(json);
   } catch (err) {
+    res.status(404).json({ error: 'Profil non trouvé' });
+  }
+};
+
+// 📤 Upload d’un profil utilisateur en JSON vers IPFS
+export const uploadProfileToIPFS = async (req, res) => {
+  try {
+    const { identity, profile } = req.body;
+    if (!identity || !profile) {
+      return res.status(400).json({ error: 'Champs requis manquants.' });
+    }
+
+    const owner = await contract.getOwner(identity);
+    console.log(`👤 Vérification du propriétaire : ${owner}`);
+    if (owner.toLowerCase() !== contract.signer.address.toLowerCase()) {
+      return res.status(403).json({ error: `Le backend n'est pas autorisé à modifier cette identité.` });
+    }
+
+    const buffer = Buffer.from(JSON.stringify(profile));
+    const result = await ipfs.add(buffer);
+    const cid = result.cid.toString();
+
+    const nameHash = ethers.utils.keccak256(ethers.utils.toUtf8Bytes('profile'));
+    const valueBytes = ethers.utils.toUtf8Bytes(cid);
+    const tx = await contract.connect(contract.signer).setAttribute(identity, nameHash, valueBytes);
+    await tx.wait();
+
+    res.json({ success: true, txHash: tx.hash, cid });
+  } catch (err) {
+    console.error('❌ Erreur uploadProfileToIPFS:', err);
     res.status(500).json({ error: err.message });
   }
 };
-export const getIdentityByOwner = async (req, res) => {
-  try {
-    const { owner } = req.params;
-    const identity = await contract.getIdentityByOwner(owner);
-    res.json({ owner, identity });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-export const getIdentityByDelegate = async (req, res) => {
-  try {
-    const { delegate } = req.params;
-    const identities = await contract.getIdentitiesByDelegate(delegate);
-    res.json({ delegate, identities });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-}; 
-export const getIdentityByAttribute = async (req, res) => {
-  try {
-    const { name, value } = req.params;
-    const nameHash = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(name));
-    const identities = await contract.getIdentitiesByAttribute(nameHash, ethers.utils.arrayify(value));
-    res.json({ name, value, identities });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-export const getIdentityByProfile = async (req, res) => {
+
+// 📥 Récupération d’un profil utilisateur via son CID stocké 
+export const getProfileByCID = async (req, res) => {
   try {
     const { cid } = req.params;
-    const identities = await contract.getIdentitiesByProfile(cid);
-    res.json({ cid, identities });
+    const response = await fetch(`http://localhost:8080/ipfs/${cid}`);
+    if (!response.ok) throw new Error('Fichier IPFS introuvable');
+
+    const json = await response.json();
+    res.json(json);
+  } catch (err) {
+    res.status(404).json({ error: 'Profil non trouvé' });
+  }
+};
+
+// 📎 Lien spécifique du profil JSON (via CID dans IPFS)
+export const linkProfileToIdentityByCID = async (req, res) => {
+  try {
+    const { identity, cid, expiresIn = 0 } = req.body;
+    if (!identity || !cid) {
+      return res.status(400).json({ error: 'Champs requis manquants.' });
+    }
+    const nameHash = ethers.utils.keccak256(ethers.utils.toUtf8Bytes('profile'));
+    const valueBytes = ethers.utils.toUtf8Bytes(cid);
+    const tx = await contract.connect(contract.signer).setAttribute(identity, nameHash, valueBytes, expiresIn);
+    await tx.wait();
+    res.json({ success: true, txHash: tx.hash });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
-export const getIdentityByOwnerAndProfile = async (req, res) => {
-  try {
-    const { owner, cid } = req.params;
-    const identities = await contract.getIdentitiesByOwnerAndProfile(owner, cid);
-    res.json({ owner, cid, identities });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-export const getIdentityByOwnerAndAttribute = async (req, res) => {
-  try {
-    const { owner, name, value } = req.params;
-    const nameHash = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(name));
-    const identities = await contract.getIdentitiesByOwnerAndAttribute(owner, nameHash, ethers.utils.arrayify(value));
-    res.json({ owner, name, value, identities });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-export const getIdentityByDelegateAndProfile = async (req, res) => {
-  try {
-    const { delegate, cid } = req.params;
-    const identities = await contract.getIdentitiesByDelegateAndProfile(delegate, cid);
-    res.json({ delegate, cid, identities });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-export const getIdentityByDelegateAndAttribute = async (req, res) => {
-  try {
-    const { delegate, name, value } = req.params;
-    const nameHash = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(name));
-    const identities = await contract.getIdentitiesByDelegateAndAttribute(delegate, nameHash, ethers.utils.arrayify(value));
-    res.json({ delegate, name, value, identities });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-export const getIdentityByProfileAndAttribute = async (req, res) => {
-  try {
-    const { cid, name, value } = req.params;
-    const nameHash = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(name));
-    const identities = await contract.getIdentitiesByProfileAndAttribute(cid, nameHash, ethers.utils.arrayify(value));
-    res.json({ cid, name, value, identities });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-export const getIdentityByOwnerAndProfileAndAttribute = async (req, res) => {
-  try {
-    const { owner, cid, name, value } = req.params;
-    const nameHash = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(name));
-    const identities = await contract.getIdentitiesByOwnerAndProfileAndAttribute(owner, cid, nameHash, ethers.utils.arrayify(value));
-    res.json({ owner, cid, name, value, identities });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-export const getIdentityByDelegateAndProfileAndAttribute = async (req, res) => {
-  try {
-    const { delegate, cid, name, value } = req.params;
-    const nameHash = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(name));
-    const identities = await contract.getIdentitiesByDelegateAndProfileAndAttribute(delegate, cid, nameHash, ethers.utils.arrayify(value));
-    res.json({ delegate, cid, name, value, identities });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-}
-export const getIdentityByOwnerAndDelegate = async (req, res) => {
-  try {
-    const { owner, delegate } = req.params;
-    const identities = await contract.getIdentitiesByOwnerAndDelegate(owner, delegate);
-    res.json({ owner, delegate, identities });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-export const getIdentityByOwnerAndDelegateAndProfile = async (req, res) => {
-  try {
-    const { owner, delegate, cid } = req.params;
-    const identities = await contract.getIdentitiesByOwnerAndDelegateAndProfile(owner, delegate, cid);
-    res.json({ owner, delegate, cid, identities });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-export const getIdentityByOwnerAndDelegateAndAttribute = async (req, res) => {
-  try {
-    const { owner, delegate, name, value } = req.params;
-    const nameHash = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(name));
-    const identities = await contract.getIdentitiesByOwnerAndDelegateAndAttribute(owner, delegate, nameHash, ethers.utils.arrayify(value));
-    res.json({ owner, delegate, name, value, identities });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-}

@@ -1,17 +1,27 @@
 import React from 'react';
-import './App.css';
-import AppRoutes from './routes/AppRoutes';
+import { Routes, Route } from 'react-router-dom';
+import Home from './pages/Home';
+import Wallet from './pages/Wallet';
+import Profile from './pages/Profile';
+import Documents from './pages/Documents';
+import Apropos from './pages/Apropos';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 
-const App = () => {
+function App() {
   return (
-    <div className="app-container">
+    <>
       <Navbar />
-      <AppRoutes />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/wallet" element={<Wallet />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/documents" element={<Documents />} />
+        <Route path="/apropos/:id" element={<Apropos />} />
+      </Routes>
       <Footer />
-    </div>
+    </>
   );
-};
+}
 
 export default App;

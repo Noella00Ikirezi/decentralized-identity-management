@@ -1,90 +1,92 @@
 // backend/controllers/ipfs.controller.js
-import pinata from '../utils/pinata.js';
+
+import { create } from 'kubo-rpc-client';
 import { contract } from '../utils/ethereum.js';
 import { fileTypeFromBuffer } from 'file-type';
 import { Buffer } from 'buffer';
+import { ethers } from 'ethers';
 
-// ✅ Upload vers Pinata + enregistrement sur le smart contract
+// Initialise le client IPFS local
+const ipfs = create({ url: 'http://127.0.0.1:5001/api/v0' });
+
+// 📤 Upload d'un fichier ou contenu vers IPFS + enregistrement dans le smart contract
 export const uploadToIPFSAndLink = async (req, res) => {
   try {
-    const { address, content } = req.body; // expiresIn supprimé
     const { file } = req;
+    const { content } = req.body;
 
+    // 🔍 Étape 1 : convertir en Buffer
     let buffer;
-    if (file) {
+    if (file && file.buffer) {
       buffer = file.buffer;
     } else if (content) {
       buffer = Buffer.from(content);
     } else {
-      return res.status(400).json({ error: 'Aucun fichier ni contenu texte fourni' });
+      return res.status(400).json({ error: 'Aucun fichier ni contenu fourni.' });
     }
 
+    // 📎 Étape 2 : détection du type MIME (optionnelle mais utile)
     const fileType = await fileTypeFromBuffer(buffer);
     const mimeType = fileType?.mime || 'application/octet-stream';
 
-    const metadata = {
-      name: 'dims-file',
-    };
+    // 📤 Étape 3 : ajout dans IPFS local
+    const result = await ipfs.add(buffer);
+    const cid = result.cid.toString();
 
-    // 📤 Envoi vers Pinata
-    const result = await pinata.pinFileToIPFS(buffer, metadata);
-    const cid = result.IpfsHash;
+    console.log(`✅ Fichier ajouté à IPFS : ${cid}`);
 
-    console.log("✅ Fichier uploadé sur IPFS (Pinata):", cid);
-
-    // ⛓ Enregistrement du CID + MIME sur le smart contract (sans expiration)
+    // 🔐 Étape 4 : Enregistrement dans le smart contract (optionnel)
     const tx = await contract.connect(contract.signer).addDocument(cid, mimeType);
     await tx.wait();
 
+    // ✅ Étape 5 : Réponse envoyée au client
     res.json({
       success: true,
       cid,
       type: mimeType,
       size: buffer.length,
       txHash: tx.hash,
-      base64: buffer.toString('base64')
     });
   } catch (err) {
-    console.error('❌ Erreur lors de l’upload & lien Pinata + blockchain :', err);
-    res.status(500).json({ error: err.message });
+    console.error('❌ Erreur IPFS local + blockchain :', err);
+    res.status(500).json({ error: err.message || 'Erreur interne' });
   }
 };
 
-// ✅ Liste des documents liés à une adresse
+// 📥 Liste des documents d'une adresse
 export const getDocuments = async (req, res) => {
   try {
     const { address } = req.params;
-    const docs = await contract.connect(contract.signer).getMyDocuments({ from: address });
+    const docs = await contract.connect(contract.signer).getDocumentsByOwner(address);
     res.json(docs);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
-// ✅ Récupération d’un fichier IPFS via CID
+// 📥 Récupération d’un fichier IPFS via CID
 export const getFromIPFS = async (req, res) => {
   try {
     const { cid } = req.params;
-    const url = `https://gateway.pinata.cloud/ipfs/${cid}`;
-    const response = await fetch(url);
+    const stream = ipfs.cat(cid);
+    let content = Buffer.alloc(0);
 
-    if (!response.ok) {
-      throw new Error(`Échec du téléchargement depuis IPFS: ${response.statusText}`);
+    for await (const chunk of stream) {
+      content = Buffer.concat([content, chunk]);
     }
 
-    const content = Buffer.from(await response.arrayBuffer());
     const fileType = await fileTypeFromBuffer(content);
-    const mimeType = fileType?.mime || 'text/plain';
+    const mimeType = fileType?.mime || 'application/octet-stream';
 
     res.setHeader('Content-Type', mimeType);
     res.send(content);
   } catch (err) {
-    console.error('❌ Erreur IPFS get:', err);
-    res.status(500).json({ error: 'Impossible de récupérer le fichier' });
+    console.error('❌ Erreur lors de la récupération depuis IPFS :', err);
+    res.status(500).json({ error: err.message });
   }
 };
 
-// ✅ Révocation d’un document IPFS dans le smart contract
+// 🔒 Révocation d’un document (mock si non implémenté sur le contrat)
 export const revokeDocument = async (req, res) => {
   try {
     const { docId } = req.body;
@@ -92,7 +94,31 @@ export const revokeDocument = async (req, res) => {
     await tx.wait();
     res.json({ success: true, txHash: tx.hash });
   } catch (err) {
-    console.error('❌ Erreur lors de la révocation du document :', err);
     res.status(500).json({ error: err.message });
   }
 };
+
+// 📤 Upload d’un profil utilisateur en JSON
+export const uploadProfileToIPFS = async (req, res) => {
+  try {
+    const { identity, profile } = req.body;
+    if (!identity || !profile) {
+      return res.status(400).json({ error: 'Champs requis manquants.' });
+    }
+
+    const buffer = Buffer.from(JSON.stringify(profile));
+    const result = await ipfs.add(buffer);
+    const cid = result.cid.toString();
+
+    const nameHash = ethers.utils.keccak256(ethers.utils.toUtf8Bytes('profile'));
+    const valueBytes = ethers.utils.toUtf8Bytes(cid);
+
+    const tx = await contract.connect(contract.signer).setAttribute(identity, nameHash, valueBytes, 0);
+    await tx.wait();
+
+    res.json({ success: true, cid, txHash: tx.hash });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+

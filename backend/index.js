@@ -3,28 +3,28 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import ipfsRoutes from './routes/ipfs.routes.js';
 import identityRoutes from './routes/identity.routes.js';
-import { errorHandler } from './middleware/errorHandler.js';
+import documentsRoutes from './routes/documents.routes.js';
 
 dotenv.config();
 
 const app = express();
 
-// CORS pour autoriser le frontend
+// 🔓 Autoriser le frontend à accéder à l’API
 app.use(cors({
   origin: 'http://localhost:5173',
   credentials: true,
 }));
 
-// ⬇️ Augmenter la limite de payload
+// ⬇️ Gérer les requêtes volumineuses
 app.use(express.json({ limit: '5mb' }));
 app.use(express.urlencoded({ extended: true, limit: '5mb' }));
 
-// Routes
+// 📦 Enregistrement des routes
 app.use('/ipfs', ipfsRoutes);
 app.use('/identity', identityRoutes);
+app.use('/documents', documentsRoutes);
 
-// Gestion des erreurs
-app.use(errorHandler);
+
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

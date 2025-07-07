@@ -1,20 +1,26 @@
+// ✅ NAVBAR MODIFIÉE AVEC NOUVEAUX LIENS
 import React from 'react';
-import { Link } from 'react-router-dom';
-import './Navbar.css';
+import { Box, Flex, Link, Spacer, Image, Heading } from '@chakra-ui/react';
+import { Link as RouterLink } from 'react-router-dom';
+import logo from '../assets/logo.svg';
 
-const Navbar = () => {
+export default function Navbar() {
   return (
-    <nav className="navbar">
-      <div className="navbar-logo">
-        <Link to="/">DIMS</Link>
-      </div>
-      <ul className="navbar-links">
-        <li><Link to="/profile">Mon Profil</Link></li>
-        <li><Link to="/documents">Mes Documents</Link></li>
-        <li><Link to="/share">Partager</Link></li>
-      </ul>
-    </nav>
+    <Box bg="gray.800" px={6} py={3} color="white">
+      <Flex align="center">
+        <Flex align="center">
+          <Image src={logo} alt="DIMS Logo" boxSize="30px" mr={2} />
+          <Heading size="md">DIMS</Heading>
+        </Flex>
+        <Spacer />
+        <Flex gap={4}>
+          <Link as={RouterLink} to="/">Accueil</Link>
+          <Link as={RouterLink} to="/wallet">Portefeuille</Link>
+          <Link as={RouterLink} to="/profile">Profil utilisateur</Link>
+          <Link as={RouterLink} to="/documents">Documents & Signature</Link>
+          <Link as={RouterLink} to="/Apropos/1">À propos</Link>
+        </Flex>
+      </Flex>
+    </Box>
   );
-};
-
-export default Navbar;
+}

@@ -1,93 +1,140 @@
-// Profile.jsx
-import React, { useEffect, useState } from 'react';
-import './Profile.css';
-import { FaUserCircle } from 'react-icons/fa';
-import { FiMail, FiPhone, FiSave } from 'react-icons/fi';
-import { uploadToIPFS } from '../utils/ipfs';
-import { linkProfile } from '../utils/identityService';
+import React, { useState, useEffect } from 'react';
+import {
+  Box,
+  Button,
+  Input,
+  Text,
+  VStack,
+  useToast,
+  Spinner,
+  Heading
+} from '@chakra-ui/react';
 
-const Profile = () => {
-  const [profile, setProfile] = useState({ name: '', email: '', phone: '', avatar: null });
-  const [cid, setCid] = useState(null);
+export default function Profile() {
+  const [account, setAccount] = useState(null);
+  const [profile, setProfile] = useState({ name: '', email: '', phone: '' });
+  const [loading, setLoading] = useState(false);
+  const toast = useToast();
 
-  useEffect(() => {
-    const savedCid = localStorage.getItem('profileCid');
-    if (savedCid && savedCid !== 'undefined') {
-      fetch(`http://localhost:5000/ipfs/content/${savedCid}`)
-        .then(res => res.json())
-        .then(data => setProfile(data))
-        .catch(err => console.error('Erreur récupération IPFS :', err));
+  const connectAndLoadProfile = async () => {
+    setLoading(true);
+    try {
+      if (!window.ethereum) {
+        throw new Error('MetaMask non détecté');
+      }
+
+      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      const addr = accounts[0];
+      setAccount(addr);
+
+      const res = await fetch(`http://localhost:5000/identity/profile/${addr}`);
+      if (res.ok) {
+        const data = await res.json();
+        setProfile(data);
+        console.log('✅ Profil chargé depuis IPFS:', data);
+      } else {
+        toast({
+          title: 'Profil non trouvé',
+          description: "Vous pouvez créer un nouveau profil.",
+          status: 'info',
+          duration: 4000,
+          isClosable: true
+        });
+      }
+    } catch (err) {
+      toast({
+        title: 'Erreur de connexion',
+        description: err.message || 'Veuillez réessayer',
+        status: 'error',
+        duration: 5000,
+        isClosable: true
+      });
+    } finally {
+      setLoading(false);
     }
-  }, []);
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setProfile((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setProfile((prev) => ({ ...prev, avatar: reader.result }));
-    };
-    reader.readAsDataURL(file);
+  const handleChange = (e) => {
+    setProfile({ ...profile, [e.target.name]: e.target.value });
   };
 
   const handleSave = async () => {
+    if (!account) return;
+
     try {
-      const data = await uploadToIPFS(profile);
-      const cid = data.cid;
-      setCid(cid);
-      localStorage.setItem('profileCid', cid);
+      console.log('📤 Envoi du profil JSON au backend...');
+      const res = await fetch('http://localhost:5000/ipfs/profile/upload', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          identity: account,
+          profile
+        })
+      });
 
-      const [address] = await window.ethereum.request({ method: 'eth_requestAccounts' });
-      await linkProfile({ identity: address, cid, expiresIn: 0 });
+      if (!res.ok) {
+        const errorData = await res.json();
+        console.error('❌ Erreur backend:', errorData);
+        toast({
+          title: 'Erreur serveur',
+          description: errorData.error || 'Impossible d’enregistrer le profil.',
+          status: 'error',
+          duration: 5000,
+          isClosable: true
+        });
+        return;
+      }
 
-      alert('Profil sauvegardé et lié à Ethereum !');
+      const data = await res.json();
+      console.log('✅ Profil enregistré:', data);
+
+      toast({
+        title: 'Profil enregistré',
+        description: `CID : ${data.cid}`,
+        status: 'success',
+        duration: 5000,
+        isClosable: true
+      });
+
     } catch (err) {
-      console.error('Erreur de sauvegarde :', err);
-      alert('Erreur de sauvegarde.');
+      console.error('❌ Erreur JS:', err);
+      toast({
+        title: 'Erreur inattendue',
+        description: err.message,
+        status: 'error',
+        duration: 5000,
+        isClosable: true
+      });
     }
   };
 
+  useEffect(() => {
+    connectAndLoadProfile();
+  }, []);
+
   return (
-    <div className="profile-container">
-      <h2><FaUserCircle /> Mon Profil</h2>
-      <div className="profile-box">
-        <div className="profile-avatar">
-          {profile.avatar ? (
-            <img src={profile.avatar} alt="Avatar" />
-          ) : (
-            <div className="placeholder-avatar"><FaUserCircle size={40} /></div>
-          )}
-          <input type="file" onChange={handleFileChange} />
-        </div>
+    <Box p={8} maxW="lg" mx="auto">
+      <VStack spacing={6}>
+        <Heading size="lg">Mon Profil</Heading>
 
-        <div className="profile-field">
-          <label>Nom complet</label>
-          <input type="text" name="name" value={profile.name} onChange={handleChange} />
-        </div>
+        {loading ? <Spinner size="lg" /> : (
+          <>
+            <Text fontSize="sm" color="gray.500">
+              Adresse Ethereum : {account || 'Non connectée'}
+            </Text>
 
-        <div className="profile-field">
-          <label><FiMail /> Email</label>
-          <input type="email" name="email" value={profile.email} onChange={handleChange} />
-        </div>
+            <Input placeholder="Nom" name="name" value={profile.name} onChange={handleChange} />
+            <Input placeholder="Email" name="email" value={profile.email} onChange={handleChange} />
+            <Input placeholder="Téléphone" name="phone" value={profile.phone} onChange={handleChange} />
 
-        <div className="profile-field">
-          <label><FiPhone /> Téléphone</label>
-          <input type="tel" name="phone" value={profile.phone} onChange={handleChange} />
-        </div>
-
-        <button onClick={handleSave} className="btn">
-          <FiSave style={{ marginRight: '5px' }} /> Sauvegarder
-        </button>
-
-        {cid && <p>CID IPFS : {cid}</p>}
-      </div>
-    </div>
+            <Button colorScheme="teal" onClick={handleSave}>
+              Enregistrer mon profil
+            </Button>
+          </>
+        )}
+      </VStack>
+    </Box>
   );
-};
-
-export default Profile;
+}
