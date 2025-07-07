@@ -5,7 +5,6 @@ import {
   Input,
   Text,
   VStack,
-  useToast,
   Spinner,
   Heading
 } from '@chakra-ui/react';
@@ -14,7 +13,6 @@ export default function Profile() {
   const [account, setAccount] = useState(null);
   const [profile, setProfile] = useState({ name: '', email: '', phone: '' });
   const [loading, setLoading] = useState(false);
-  const toast = useToast();
 
   const connectAndLoadProfile = async () => {
     setLoading(true);
@@ -33,22 +31,10 @@ export default function Profile() {
         setProfile(data);
         console.log('✅ Profil chargé depuis IPFS:', data);
       } else {
-        toast({
-          title: 'Profil non trouvé',
-          description: "Vous pouvez créer un nouveau profil.",
-          status: 'info',
-          duration: 4000,
-          isClosable: true
-        });
+        console.warn('ℹ️ Profil non trouvé. Créez un nouveau profil.');
       }
     } catch (err) {
-      toast({
-        title: 'Erreur de connexion',
-        description: err.message || 'Veuillez réessayer',
-        status: 'error',
-        duration: 5000,
-        isClosable: true
-      });
+      console.error('❌ Erreur de connexion MetaMask:', err.message);
     } finally {
       setLoading(false);
     }
@@ -77,36 +63,14 @@ export default function Profile() {
       if (!res.ok) {
         const errorData = await res.json();
         console.error('❌ Erreur backend:', errorData);
-        toast({
-          title: 'Erreur serveur',
-          description: errorData.error || 'Impossible d’enregistrer le profil.',
-          status: 'error',
-          duration: 5000,
-          isClosable: true
-        });
         return;
       }
 
       const data = await res.json();
-      console.log('✅ Profil enregistré:', data);
-
-      toast({
-        title: 'Profil enregistré',
-        description: `CID : ${data.cid}`,
-        status: 'success',
-        duration: 5000,
-        isClosable: true
-      });
+      console.log('✅ Profil enregistré sur IPFS:', data);
 
     } catch (err) {
-      console.error('❌ Erreur JS:', err);
-      toast({
-        title: 'Erreur inattendue',
-        description: err.message,
-        status: 'error',
-        duration: 5000,
-        isClosable: true
-      });
+      console.error('❌ Erreur JS lors de la sauvegarde:', err.message);
     }
   };
 

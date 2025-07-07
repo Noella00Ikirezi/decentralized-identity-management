@@ -4,15 +4,14 @@ import {
   Button,
   Text,
   VStack,
-  useToast,
   Container,
   Link
 } from '@chakra-ui/react';
 
 export default function Wallet() {
-  const toast = useToast();
   const [account, setAccount] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState(null);
 
   const connectMetaMask = async () => {
     setLoading(true);
@@ -23,38 +22,22 @@ export default function Wallet() {
 
       const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
       setAccount(accounts[0]);
-
-      toast({
-        title: "Connecté",
-        description: `Adresse : ${accounts[0]}`,
-        status: "success",
-        duration: 4000,
-        isClosable: true,
-      });
+      console.log("✅ Connecté avec MetaMask :", accounts[0]);
+      setMessage({ type: 'success', text: `Connecté avec : ${accounts[0]}` });
     } catch (err) {
-      toast({
-        title: "Erreur de connexion",
-        description: err.message || "Échec MetaMask",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
+      console.error("❌ Erreur MetaMask :", err.message);
+      setMessage({ type: 'error', text: err.message || "Échec MetaMask" });
     } finally {
       setLoading(false);
     }
   };
 
   const handleCreateMetaMaskAccount = () => {
-    if (typeof window.ethereum === 'undefined') {
+    if (!window.ethereum) {
       window.open('https://metamask.io/download.html', '_blank');
     } else {
-      toast({
-        title: 'MetaMask détecté',
-        description: "Ouvre MetaMask puis clique sur 'Créer un compte'.",
-        status: 'info',
-        duration: 6000,
-        isClosable: true,
-      });
+      console.log("ℹ️ MetaMask détecté. Ouvre-le pour créer un compte.");
+      setMessage({ type: 'info', text: "MetaMask détecté. Ouvre-le pour créer un compte." });
     }
   };
 
@@ -69,6 +52,15 @@ export default function Wallet() {
             Pour utiliser DIMS, vous devez disposer d'un portefeuille Ethereum sécurisé via MetaMask.
           </Text>
         </Box>
+
+        {message && (
+          <Text color={
+            message.type === 'success' ? 'green.500' :
+            message.type === 'error' ? 'red.500' : 'blue.500'
+          }>
+            {message.text}
+          </Text>
+        )}
 
         <Button colorScheme="orange" size="lg" onClick={handleCreateMetaMaskAccount}>
           Installer ou créer un compte MetaMask

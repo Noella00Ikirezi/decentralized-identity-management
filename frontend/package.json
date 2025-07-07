@@ -7,29 +7,19 @@
     "preview": "vite preview"
   },
   "dependencies": {
-<<<<<<< HEAD
     "@chakra-ui/icons": "^2.2.4",
-    "@chakra-ui/react": "^2.8.1",
-    "@emotion/react": "^11.11.1",
-    "@emotion/styled": "^11.11.0",
-    "@metamask/sdk": "^0.33.0",
-    "ethers": "^6.7.0",
-    "framer-motion": "^10.16.4",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-=======
-    "@chakra-ui/react": "^3.21.0",
+    "@chakra-ui/react": "^2.8.0",
     "@emotion/react": "^11.14.0",
-    "@emotion/styled": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@metamask/sdk": "^0.33.0",
     "axios": "^1.8.4",
     "ethers": "^6.13.5",
-    "framer-motion": "^12.5.0",
+    "framer-motion": "^12.23.0",
     "lucide-react": "^0.488.0",
     "qrcode.react": "^4.2.0",
-    "react": "^19.0.0",
+    "react": "^18.2.0",
     "react-bootstrap": "^2.10.9",
-    "react-dom": "^19.0.0",
->>>>>>> 033a0c7cf4583b98f5ecba33ed7edf0aa16cd4bf
+    "react-dom": "^18.2.0",
     "react-icons": "^5.5.0",
     "react-router-dom": "^6.21.1"
   },

@@ -5,14 +5,14 @@ import {
   Text,
   VStack,
   Link,
-  AspectRatio,
-  Divider
+  Divider,
+  AspectRatio
 } from '@chakra-ui/react';
 
 export default function Apropos() {
   return (
     <Box p={8} maxW="5xl" mx="auto">
-      <VStack spacing={6} align="start">
+      <VStack spacing={8} align="start">
         <Heading size="xl">À propos de DIMS</Heading>
         <Text fontSize="md">
           DIMS (Decentralized Identity Management System) est une application décentralisée conçue pour offrir une gestion d'identité numérique sécurisée en s'appuyant sur la technologie blockchain.
@@ -52,11 +52,11 @@ export default function Apropos() {
 
         <Heading size="lg">🖼️ Frontend React</Heading>
         <Text fontSize="sm">
-          L’interface utilisateur est construite avec React + Chakra UI. Elle inclut :
+          L’interface utilisateur est construite avec React et Chakra UI. Elle inclut :
         </Text>
         <Box pl={4}>
           <Text fontSize="sm">• Connexion MetaMask et signature</Text>
-          <Text fontSize="sm">• Upload de documents avec preview CID</Text>
+          <Text fontSize="sm">• Upload de documents avec prévisualisation CID</Text>
           <Text fontSize="sm">• Navigation sécurisée et responsive</Text>
         </Box>
         <Link href="https://chakra-ui.com/" isExternal color="blue.500">
@@ -87,7 +87,7 @@ export default function Apropos() {
         <Divider />
 
         <Text fontSize="sm" color="gray.500">
-          DIMS est un projet open source en cours de développement. Pour toute contribution ou retour, merci de visiter notre dépôt GitHub ou de nous contacter.
+          DIMS est un projet open source en cours de développement. Pour contribuer ou poser des questions, consultez notre dépôt GitHub ou contactez-nous.
         </Text>
       </VStack>
     </Box>

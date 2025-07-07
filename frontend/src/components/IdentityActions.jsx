@@ -1,55 +1,59 @@
-import React from 'react';
-import { Box, Button, VStack, Text, useToast, Link } from '@chakra-ui/react';
+import React, { useState } from 'react';
+import { Box, Input, Button, VStack, useToast } from '@chakra-ui/react';
 
 export default function IdentityActions() {
+  const [docId, setDocId] = useState('');
+  const [recipient, setRecipient] = useState('');
   const toast = useToast();
 
-  const handleRevoke = () => {
-    toast({
-      title: "Accès révoqué",
-      description: "L'identité ou le document partagé a été révoqué.",
-      status: "info",
-      duration: 4000,
-      isClosable: true,
-    });
+  const revokeAccess = async () => {
+    try {
+      const res = await fetch('http://localhost:5000/identity/revoke-share', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ docId, recipient }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        toast({
+          title: 'Accès révoqué',
+          description: `Document ${docId} pour ${recipient}`,
+          status: 'success',
+          duration: 5000,
+          isClosable: true,
+        });
+      } else {
+        throw new Error(data.error || 'Erreur serveur');
+      }
+    } catch (err) {
+      toast({
+        title: 'Erreur',
+        description: err.message,
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+    }
   };
 
   return (
-    <Box p={4} border="1px solid" borderColor="gray.200" borderRadius="md">
-      <VStack spacing={4} align="start">
-        <Text fontWeight="bold" fontSize="lg">🪪 Gestion de l'identité</Text>
-
-        <Text fontSize="sm" color="gray.600">
-          Cette section vous permet de révoquer les accès à des documents ou des données 
-          que vous avez précédemment partagés. Cela peut inclure :
-        </Text>
-
-        <Box pl={4}>
-          <Text fontSize="sm">• Un document IPFS partagé avec une autre adresse</Text>
-          <Text fontSize="sm">• Un accès délégué à votre profil ou à certaines données</Text>
-          <Text fontSize="sm">• Une autorisation temporaire expirée</Text>
-        </Box>
-
-        <Text fontSize="sm" color="gray.600">
-          Les révocations peuvent être gérées via un smart contract ou votre backend, selon la logique choisie.
-        </Text>
-
-        <Button colorScheme="red" onClick={handleRevoke}>
-          Révoquer un accès
+    <Box>
+      <VStack spacing={4}>
+        <Input
+          placeholder="ID du document"
+          value={docId}
+          onChange={(e) => setDocId(e.target.value)}
+        />
+        <Input
+          placeholder="Adresse du destinataire"
+          value={recipient}
+          onChange={(e) => setRecipient(e.target.value)}
+        />
+        <Button colorScheme="red" onClick={revokeAccess}>
+          Révoquer l’accès
         </Button>
-
-        <Text fontSize="sm" color="gray.500">
-          🔗 Besoin d’aide ? Consultez notre guide :
-        </Text>
-        <Link
-          href="https://docs.example.com/gestion-identite"
-          isExternal
-          color="blue.500"
-          fontWeight="medium"
-          fontSize="sm"
-        >
-          📘 Tutoriel : Comment fonctionne la révocation d’accès
-        </Link>
       </VStack>
     </Box>
   );
