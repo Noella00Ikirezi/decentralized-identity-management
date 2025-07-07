@@ -1,4 +1,9 @@
+<<<<<<< HEAD
 // === api/api.js ===
+=======
+// src/api/api.js
+export const API_BASE = process.env.API_BASE ;
+>>>>>>> 033a0c7cf4583b98f5ecba33ed7edf0aa16cd4bf
 
 const API_BASE = 'http://localhost:5000';
 
