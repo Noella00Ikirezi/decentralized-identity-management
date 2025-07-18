@@ -1,0 +1,59 @@
+/* src/styles/HistoriquePartage.css */
+.historique-page {
+  padding: 30px;
+  font-family: Arial, sans-serif;
+  background-color: #fefefe;
+  min-height: 100vh;
+}
+
+.back-button {
+  font-size: 28px;
+  text-decoration: none;
+  background-color: #e6b0dd;
+  padding: 6px 14px;
+  border-radius: 50%;
+  box-shadow: 2px 2px 0px #666;
+  display: inline-block;
+  margin-bottom: 20px;
+}
+
+.historique-container {
+  background-color: #fff8e1;
+  padding: 25px;
+  border: 2px solid black;
+  border-radius: 20px;
+  max-width: 900px;
+  margin: 0 auto;
+  box-shadow: 3px 3px 0px #aaa;
+}
+
+.historique-container h2 {
+  margin-bottom: 20px;
+  font-size: 24px;
+  text-align: center;
+}
+
+.historique-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 16px;
+}
+
+.historique-table th,
+.historique-table td {
+  border: 1px solid black;
+  padding: 12px 16px;
+  text-align: left;
+}
+
+.historique-table thead {
+  background-color: #f0c36d;
+}
+
+.historique-table tbody tr:nth-child(even) {
+  background-color: #fff3cd;
+}
+
+.historique-table tbody tr:nth-child(odd) {
+  background-color: #fef9e7;
+}

@@ -1,0 +1,77 @@
+.add-doc-container {
+  min-height: 100vh;
+  background: linear-gradient(to bottom right, #f0f0f0, #e3e3e3);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.add-doc-box {
+  background-color: #dcdcdc;
+  padding: 40px;
+  border-radius: 30px;
+  box-shadow: 4px 4px 8px #bbb;
+  width: 100%;
+  max-width: 400px;
+}
+
+.add-doc-box h2 {
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.add-doc-box label {
+  display: block;
+  margin-bottom: 15px;
+  font-weight: bold;
+}
+
+.add-doc-box input[type='text'],
+.add-doc-box input[type='date'] {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+  border-radius: 20px;
+  border: 2px solid black;
+  outline: none;
+  font-size: 1em;
+}
+
+.file-drop-area {
+  background: white;
+  border: 2px solid black;
+  height: 80px;
+  border-radius: 15px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 2em;
+  margin-top: 10px;
+}
+
+.validate-btn {
+  margin-top: 25px;
+  width: 100%;
+  padding: 12px;
+  background-color: #66cc66;
+  border: none;
+  font-weight: bold;
+  border-radius: 20px;
+  box-shadow: 4px 4px 0px #999;
+  cursor: pointer;
+}
+
+.back-btn {
+  position: absolute;
+  left: 20px;
+  bottom: 20px;
+  font-size: 2em;
+  text-decoration: none;
+  color: #c065a8;
+  box-shadow: 4px 4px 0px #aaa;
+  padding: 8px;
+  border-radius: 50%;
+}

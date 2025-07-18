@@ -8,15 +8,20 @@ module.exports = {
   },
 
   compilers: {
-    solc: {
-      version: "0.8.21",     // Matches your pragma
+  solc: {
+    version: "0.8.20",
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 200
+      },
+      viaIR: true
     }
-  },
-
-  mocha: {
-    // timeout: 100000
   }
+}
 
+
+  
   // Truffle DB is disabled by default
   // db: {
   //   enabled: false,

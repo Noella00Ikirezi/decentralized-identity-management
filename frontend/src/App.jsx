@@ -1,28 +1,30 @@
-// src/App.jsx
-import React from 'react';
-import { Routes, Route } from 'react-router-dom';
-import Navbar from './components/Navbar';
-import Footer from './components/Footer';
-import Home from './pages/Home';
-import Wallet from './pages/Wallet';
-import Profile from './pages/Profile';
-import Documents from './pages/Documents';
-import Apropos from './pages/Apropos';
+import React from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { useAuth } from "./context/AuthContext";
 
-function App() {
-  return (
-    <>
-      <Navbar />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/wallet" element={<Wallet />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/documents" element={<Documents />} />
-        <Route path="/apropos/:id" element={<Apropos />} />
-      </Routes>
-      <Footer />
-    </>
-  );
+import Auth from "./pages/Auth";
+import Dashboard from "./pages/Dashboard";
+import MesDocuments from "./pages/MesDocuments";
+import AddDocument from "./pages/AddDocument";
+import Partage from "./pages/Partage";
+import PartagerDocument from "./pages/PartagerDocument";
+import HistoriquePartage from "./pages/HistoriquePartage";
+
+function PrivateRoute({ element }) {
+  const { account } = useAuth();
+  return account ? element : <Navigate to="/" />;
 }
 
-export default App;
+export default function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<Auth />} />
+      <Route path="/dashboard" element={<PrivateRoute element={<Dashboard />} />} />
+      <Route path="/mes-documents" element={<PrivateRoute element={<MesDocuments />} />} />
+      <Route path="/add-document" element={<PrivateRoute element={<AddDocument />} />} />
+      <Route path="/partage" element={<PrivateRoute element={<Partage />} />} />
+      <Route path="/partager-document" element={<PrivateRoute element={<PartagerDocument />} />} />
+      <Route path="/historique-partage" element={<PrivateRoute element={<HistoriquePartage />} />} />
+    </Routes>
+  );
+}

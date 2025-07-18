@@ -1,0 +1,67 @@
+.docs-container {
+  padding: 40px;
+
+  width: 100vw; /* Largeur plein écran */
+  height: 100vh; /* Hauteur plein écran */
+
+  background: linear-gradient(to bottom left, #fffbe6, #f0d278, #e49dd0);
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+.docs-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.docs-title {
+  font-size: 1.8em;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.add-btn {
+  background-color: #91df91;
+  border: none;
+  padding: 10px 20px;
+  font-weight: bold;
+  border-radius: 20px;
+  box-shadow: 4px 4px 0px #ccc;
+  cursor: pointer;
+}
+
+.docs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+.doc-card {
+  background-color: #f3cd6b;
+  border-radius: 20px;
+  padding: 15px;
+  box-shadow: 4px 4px 0px #555;
+  position: relative;
+}
+
+.doc-icon {
+  position: absolute;
+  right: 15px;
+  bottom: 15px;
+  font-size: 1.5em;
+}
+
+.back-btn {
+  display: inline-block;
+  margin-top: 40px;
+  font-size: 2em;
+  text-decoration: none;
+  color: #b14aad;
+  box-shadow: 4px 4px 0px #aaa;
+  padding: 8px;
+  border-radius: 50%;
+}

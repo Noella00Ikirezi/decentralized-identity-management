@@ -1,0 +1,65 @@
+.dashboard-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw; /* Largeur plein écran */
+  height: 100vh; /* Hauteur plein écran */
+  background: linear-gradient(
+    to bottom left,
+    #6fcf97,
+    #e49dd0,
+    #f0d278,
+    #ffffff
+  );
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+
+.dashboard-box {
+  background-color: #d9d9d9;
+  padding: 40px;
+  border-radius: 30px;
+  box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  width: 400px;
+}
+
+.avatar-placeholder {
+  font-size: 80px;
+  margin-bottom: 30px;
+}
+
+.dashboard-btn {
+  background-color: #f5cb69;
+  border: 2px solid #000;
+  border-radius: 30px;
+  padding: 15px;
+  font-size: 18px;
+  font-weight: bold;
+  width: 100%;
+  margin-bottom: 15px;
+  box-shadow: 3px 3px #999;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.dashboard-btn:hover {
+  transform: scale(1.02);
+}
+.account-info {
+  text-align: center;
+  margin-bottom: 1rem;
+  font-weight: bold;
+}
+
+.account-label {
+  font-size: 1.1rem;
+}
+
+.account-balance {
+  font-size: 0.95rem;
+  color: #555;
+}

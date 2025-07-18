@@ -3,31 +3,31 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
-import ipfsRoutes from './routes/ipfs.routes.js';
-import identityRoutes from './routes/identity.routes.js';
-import documentsRoutes from './routes/documents.routes.js';
 
-// 🌍 Initialisation
+// ✅ Import correct des routes selon ta structure actuelle
+import ipfsRoutes from './routes/ipfs.routes.js';
+import documentRoutes from './routes/documents.routes.js';
+
 dotenv.config();
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// 🔓 CORS pour connexion frontend
+// 🔓 Autoriser le frontend React (port Vite)
 app.use(cors({
   origin: 'http://localhost:5173',
-  credentials: true,
+  credentials: true
 }));
 
-// 🧠 Body parser
+// 📦 Middleware parsing (body JSON + forms)
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// 📦 Routes centralisées
+// 📂 Routes backend
 app.use('/ipfs', ipfsRoutes);
-app.use('/identity', identityRoutes);
-app.use('/documents', documentsRoutes);
+app.use('/documents', documentRoutes);
 
 // 🚀 Lancement serveur
 app.listen(PORT, () => {
-  console.log(`✅ API backend opérationnelle sur http://localhost:${PORT}`);
+  console.log(`✅ Backend opérationnel sur http://localhost:${PORT}`);
 });
