@@ -1,77 +1,77 @@
-.add-doc-container {
-  min-height: 100vh;
-  background: linear-gradient(to bottom right, #f0f0f0, #e3e3e3);
+/* Container principal */
+.add-document-page {
+  position: absolute;
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(
+    to bottom left,
+    #6fcf97,
+    #e49dd0,
+    #f0d278,
+    #ffffff
+  );
   display: flex;
   justify-content: center;
   align-items: center;
-  position: relative;
-  padding: 20px;
-  box-sizing: border-box;
 }
 
-.add-doc-box {
-  background-color: #dcdcdc;
-  padding: 40px;
-  border-radius: 30px;
-  box-shadow: 4px 4px 8px #bbb;
+/* Carte du formulaire */
+.add-document-card {
+  background: rgba(255, 255, 255, 0.9);
+  padding: 2rem;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   width: 100%;
   max-width: 400px;
 }
 
-.add-doc-box h2 {
+/* Titre */
+.add-document-card h2 {
   text-align: center;
-  margin-bottom: 25px;
+  margin-bottom: 24px;
+  color: #333;
 }
 
-.add-doc-box label {
+/* Labels */
+.add-document-card label {
   display: block;
-  margin-bottom: 15px;
+  margin-bottom: 8px;
   font-weight: bold;
+  color: #555;
 }
 
-.add-doc-box input[type='text'],
-.add-doc-box input[type='date'] {
+/* Inputs */
+.add-document-card input[type='text'],
+.add-document-card input[type='file'] {
   width: 100%;
   padding: 10px;
-  margin-top: 5px;
-  border-radius: 20px;
-  border: 2px solid black;
-  outline: none;
-  font-size: 1em;
+  margin-bottom: 20px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-sizing: border-box;
 }
 
-.file-drop-area {
-  background: white;
-  border: 2px solid black;
-  height: 80px;
-  border-radius: 15px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 2em;
-  margin-top: 10px;
-}
-
-.validate-btn {
-  margin-top: 25px;
+/* Bouton */
+.add-document-card button {
   width: 100%;
+  background-color: #007bff;
+  color: white;
   padding: 12px;
-  background-color: #66cc66;
   border: none;
-  font-weight: bold;
-  border-radius: 20px;
-  box-shadow: 4px 4px 0px #999;
+  border-radius: 5px;
+  font-size: 16px;
   cursor: pointer;
+  transition: background-color 0.3s ease;
 }
 
-.back-btn {
-  position: absolute;
-  left: 20px;
-  bottom: 20px;
-  font-size: 2em;
-  text-decoration: none;
-  color: #c065a8;
-  box-shadow: 4px 4px 0px #aaa;
-  padding: 8px;
-  border-radius: 50%;
+.add-document-card button:hover {
+  background-color: #0056b3;
+}
+
+/* Message */
+.add-document-card p {
+  text-align: center;
+  margin-top: 15px;
+  font-size: 14px;
+  color: #555;
 }

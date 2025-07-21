@@ -43,7 +43,7 @@ export default function Dashboard() {
           <button className="dashboard-btn">Ajouter un Document ➕</button>
         </Link>
 
-        <Link to="/partage">
+        <Link to="/gerer-acces">
           <button className="dashboard-btn">Gérer les accès 👥</button>
         </Link>
 

@@ -1,14 +1,16 @@
 import express from "express";
-import multer from "multer";
-import { uploadToIPFS, downloadFromIPFS } from "../controllers/ipfs.controller.js";
+import {
+  uploadToIPFS,
+  getFromIPFS,
+  uploadMiddleware,
+} from "../controllers/ipfs.controller.js";
 
 const router = express.Router();
-const upload = multer({ dest: "uploads/" });
 
-// 📤 Upload vers IPFS
-router.post("/upload", upload.single("file"), uploadToIPFS);
+// 🆙 Upload fichier vers IPFS
+router.post("/upload", uploadMiddleware, uploadToIPFS);
 
-// 📥 Téléchargement depuis IPFS
-router.get("/download/:cid", downloadFromIPFS);
+// 🔎 Lire un fichier depuis IPFS (proxy)
+router.get("/:cid", getFromIPFS);
 
 export default router;

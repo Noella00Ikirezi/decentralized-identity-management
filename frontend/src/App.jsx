@@ -6,7 +6,7 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import MesDocuments from "./pages/MesDocuments";
 import AddDocument from "./pages/AddDocument";
-import Partage from "./pages/Partage";
+import GererAcces from "./pages/GererAcces";
 import PartagerDocument from "./pages/PartagerDocument";
 import HistoriquePartage from "./pages/HistoriquePartage";
 
@@ -22,7 +22,7 @@ export default function App() {
       <Route path="/dashboard" element={<PrivateRoute element={<Dashboard />} />} />
       <Route path="/mes-documents" element={<PrivateRoute element={<MesDocuments />} />} />
       <Route path="/add-document" element={<PrivateRoute element={<AddDocument />} />} />
-      <Route path="/partage" element={<PrivateRoute element={<Partage />} />} />
+      <Route path="/gerer-acces" element={<PrivateRoute element={<GererAcces />} />} />
       <Route path="/partager-document" element={<PrivateRoute element={<PartagerDocument />} />} />
       <Route path="/historique-partage" element={<PrivateRoute element={<HistoriquePartage />} />} />
     </Routes>

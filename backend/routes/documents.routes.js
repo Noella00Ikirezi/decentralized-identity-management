@@ -1,35 +1,35 @@
 import express from "express";
 import {
-  addDocument,
   getMyDocuments,
+  addDocument,
   revokeDocument,
   shareDocument,
-  revokeShare,
-  canAccess,
-  getSharedAccesses
+  revokeSharedAccess,
+  getSharedAccesses,
+  canAccessDocument,
 } from "../controllers/documents.controller.js";
 
 const router = express.Router();
 
-// ➕ Ajouter un document
-router.post("/", addDocument);
+// 📄 Récupérer les documents de l'utilisateur
+router.get("/get", getMyDocuments);
 
-// 📥 Récupérer tous les documents de l'utilisateur connecté
-router.get("/my", getMyDocuments);
+// ➕ Ajouter un document
+router.post("/add", addDocument);
 
 // ❌ Révoquer un document
-router.post("/revoke", revokeDocument);
+router.post("/revoke/:docId", revokeDocument);
 
-// 🔄 Partager un document
+// 🔗 Partager un document
 router.post("/share", shareDocument);
 
-// ❌ Révoquer un accès partagé
-router.post("/revoke-share", revokeShare);
+// 👥 Révoquer un partage
+router.post("/revoke-share", revokeSharedAccess);
 
-// 🔍 Vérifier un accès : /documents/access/:owner/:docId
-router.get("/access/:owner/:docId", canAccess);
-
-// 📜 Obtenir les accès partagés : /documents/shared/:docId
+// 👁 Obtenir l'historique des accès
 router.get("/shared/:docId", getSharedAccesses);
+
+// 🔍 Vérifier si l'utilisateur peut accéder à un document
+router.get("/can-access/:owner/:docId", canAccessDocument);
 
 export default router;

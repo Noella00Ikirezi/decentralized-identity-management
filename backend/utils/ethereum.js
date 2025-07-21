@@ -1,122 +1,54 @@
-import { JsonRpcProvider, Wallet, Contract } from 'ethers';
-import fs from 'fs';
-import dotenv from 'dotenv';
+import { ethers } from "ethers";
+import fs from "fs";
+import path from "path";
+import dotenv from "dotenv";
+
 dotenv.config();
 
-// Chargement de l'ABI depuis abi.json
-const contractJson = JSON.parse(fs.readFileSync('./abi.json'));
-const abi = contractJson.abi;
+const { RPC_URL, PRIVATE_KEY, CONTRACT_ADDRESS } = process.env;
 
-const provider = new JsonRpcProvider(process.env.RPC_URL);
-const wallet = new Wallet(process.env.PRIVATE_KEY, provider);
-const contract = new Contract(process.env.CONTRACT_ADDRESS, abi, wallet);
+if (!RPC_URL) {
+  throw new Error("❌ RPC_URL manquante dans .env");
+}
+if (!PRIVATE_KEY || !ethers.isHexString(PRIVATE_KEY)) {
+  throw new Error("❌ PRIVATE_KEY invalide ou manquante dans .env");
+}
+if (!CONTRACT_ADDRESS) {
+  throw new Error("❌ CONTRACT_ADDRESS manquante dans .env");
+}
 
-export { contract, wallet, provider };
-export const getContract = () => {
-  if (!process.env.CONTRACT_ADDRESS) {
-    throw new Error('❌ CONTRACT_ADDRESS manquant dans .env');
+const abiPath = path.join(process.cwd(), "abi", "abi.json");
+if (!fs.existsSync(abiPath)) {
+  throw new Error("❌ ABI introuvable à : " + abiPath);
+}
+
+const raw = JSON.parse(fs.readFileSync(abiPath, "utf8"));
+if (!raw.abi) {
+  throw new Error("❌ ABI invalide dans le fichier ABI");
+}
+const abi = raw.abi;
+
+export const provider = new ethers.JsonRpcProvider(RPC_URL);
+export const wallet = new ethers.Wallet(PRIVATE_KEY, provider);
+export const contract = new ethers.Contract(CONTRACT_ADDRESS, abi, wallet);
+
+console.log("🔧 Configuration Ethereum :");
+console.log("• RPC_URL =", RPC_URL);
+console.log("• CONTRACT_ADDRESS =", CONTRACT_ADDRESS);
+console.log("• Wallet address =", wallet.address);
+
+// Diagnostic de contrat
+(async () => {
+  try {
+    const code = await provider.getCode(CONTRACT_ADDRESS);
+    console.log(`🔍 Code bytecode (${CONTRACT_ADDRESS}):`, code === "0x" ? "❌ AUCUN" : "✅ Présent");
+  } catch (error) {
+    console.error("Erreur lors de la récupération du bytecode du contrat :", error);
   }
-  return contract;
-};
-export const getWallet = () => {
-  if (!process.env.PRIVATE_KEY) {
-    throw new Error('❌ PRIVATE_KEY manquant dans .env');
-  }
-  return wallet;
-};  
+})();
 
-
-export const getProvider = () => {
-  if (!process.env.RPC_URL) {
-    throw new Error('❌ RPC_URL manquant dans .env');
-  }       
-  return provider;
-};
-
-export const getNetwork = async () => {
-  const network = await provider.getNetwork();
-  return network;
-};  
-
-export const getBlockNumber = async () => {
-  const blockNumber = await provider.getBlockNumber();
-  return blockNumber;
-};
-
-export const getBalance = async (address) => {
-  if (!address) {
-    throw new Error('❌ Adresse manquante pour obtenir le solde');
-  }
-  const balance = await provider.getBalance(address);
-  return balance;
-};
-
-export const getTransaction = async (txHash) => {
-  if (!txHash) {
-    throw new Error('❌ Hash de transaction manquant');
-  }
-  const tx = await provider.getTransaction(txHash);
-  return tx;
-};
-
-export const getTransactionReceipt = async (txHash) => {
-  if (!txHash) {
-    throw new Error('❌ Hash de transaction manquant pour obtenir le reçu');
-  }
-  const receipt = await provider.getTransactionReceipt(txHash);
-  return receipt;
-};
-
-export const getGasPrice = async () => {
-  const gasPrice = await provider.getGasPrice();
-  return gasPrice;
-};
-
-export const estimateGas = async (tx) => {
-  if (!tx) {
-    throw new Error('❌ Transaction manquante pour estimer le gaz');
-  }
-  const gasEstimate = await provider.estimateGas(tx);
-  return gasEstimate;
-};  
-
-
-export const waitForTransaction = async (txHash, confirmations = 1) => {
-  if (!txHash) {
-    throw new Error('❌ Hash de transaction manquant pour attendre la confirmation');
-  }
-  const receipt = await provider.waitForTransaction(txHash, confirmations);
-  return receipt;
-};
-
-export const getBlock = async (blockNumberOrHash) => {
-  if (!blockNumberOrHash) {
-    throw new Error('❌ Numéro ou hash de bloc manquant');
-  }
-  const block = await provider.getBlock(blockNumberOrHash);
-  return block;
-};
-
-export const getBlockWithTransactions = async (blockNumberOrHash) => {
-  if (!blockNumberOrHash) {
-    throw new Error('❌ Numéro ou hash de bloc manquant pour obtenir les transactions');
-  }
-  const block = await provider.getBlockWithTransactions(blockNumberOrHash);
-  return block;
-};
-
-export const getCode = async (address) => {
-  if (!address) {
-    throw new Error('❌ Adresse manquante pour obtenir le code');
-  }
-  const code = await provider.getCode(address);
-  return code;
-};
-
-export const getStorageAt = async (address, position) => {
-  if (!address || position === undefined) {
-    throw new Error('❌ Adresse ou position de stockage manquante');
-  }
-  const storage = await provider.getStorageAt(address, position);
-  return storage;
-};
+// Affiche les signatures disponibles dans l'ABI
+console.log("📦 Fonctions disponibles dans l'ABI :");
+abi
+  .filter((f) => f.type === "function")
+  .forEach((f) => console.log(` - ${f.name}(${f.inputs.map((i) => `${i.type} ${i.name}`).join(", ")})`));

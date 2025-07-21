@@ -1,106 +1,175 @@
-// documents.controller.js
-import { Contract, JsonRpcProvider, Wallet } from "ethers";
-import fs from "fs";
-import dotenv from "dotenv";
-dotenv.config();
+import { contract, wallet } from "../utils/ethereum.js";
+import { ethers } from "ethers";
 
-// ✅ Chargement ABI
-const abi = JSON.parse(fs.readFileSync("./abi.json")).abi;
-
-// ✅ Configuration du provider + wallet
-const provider = new JsonRpcProvider(process.env.RPC_URL);
-const wallet = new Wallet(process.env.PRIVATE_KEY, provider);
-const contract = new Contract(process.env.CONTRACT_ADDRESS, abi, wallet);
-
-// ➕ Ajouter un document
-export const addDocument = async (req, res) => {
+// Obtenir les documents de l'utilisateur connecté
+export async function getMyDocuments(req, res) {
   try {
-    const { cid, mimeType, title, docType } = req.body;
+    console.log("[getMyDocuments] Démarrage de la récupération des documents");
 
-    if (!cid || !mimeType || !title || !docType) {
-      return res.status(400).json({ message: "Tous les champs sont requis." });
+    const account = req.headers["x-wallet-address"];
+    if (!account) {
+      console.warn("[getMyDocuments] Aucune adresse fournie dans les headers");
+      return res.status(400).json({ error: "Adresse Ethereum manquante" });
     }
 
-    const tx = await contract.addDocument(cid, mimeType, title, docType);
+    console.log(`[getMyDocuments] Adresse Ethereum reçue : ${account}`);
+    const documents = await contract.connect(wallet).getMyDocuments();
+    console.log(`[getMyDocuments] Documents récupérés (${documents.length})`);
+
+    res.json(documents);
+  } catch (error) {
+    console.error("[getMyDocuments] Erreur :", error);
+    res.status(500).json({ error: "Impossible de récupérer les documents" });
+  }
+}
+
+// Ajouter un document
+export async function addDocument(req, res) {
+  try {
+    console.log("[addDocument] Requête reçue");
+    const { cid, mimeType, title, docType, expiresIn, ethereumAddress } = req.body;
+
+    if (!ethereumAddress) {
+      console.warn("[addDocument] Adresse Ethereum manquante");
+      return res.status(400).json({ error: "Adresse Ethereum requise" });
+    }
+
+    if (!cid || !mimeType || !title || !docType || !expiresIn) {
+      console.warn("[addDocument] Champs manquants dans le payload :", req.body);
+      return res.status(400).json({ error: "Champs requis manquants" });
+    }
+
+    console.log(`[addDocument] CID: ${cid}`);
+    console.log(`[addDocument] MIME: ${mimeType}`);
+    console.log(`[addDocument] Title: ${title}`);
+    console.log(`[addDocument] DocType: ${docType}`);
+    console.log(`[addDocument] ExpiresIn: ${expiresIn}`);
+    console.log(`[addDocument] Depuis wallet: ${ethereumAddress}`);
+
+    const tx = await contract.connect(wallet).addDocument(
+      cid,
+      mimeType,
+      title,
+      docType,
+      expiresIn
+    );
+
+    console.log(`[addDocument] Transaction envoyée : ${tx.hash}`);
     await tx.wait();
+    console.log(`[addDocument] Transaction confirmée`);
 
-    res.status(201).json({ message: "✅ Document ajouté avec succès." });
-  } catch (err) {
-    console.error("❌ Erreur addDocument:", err);
-    res.status(500).json({ error: err.message });
+    res.json({ message: "Document ajouté avec succès", txHash: tx.hash });
+  } catch (error) {
+    console.error(`[addDocument] Erreur :`, error);
+    res.status(500).json({ error: "Erreur lors de l'ajout du document" });
   }
-};
+}
 
-// 📥 Obtenir les documents de l'utilisateur connecté
-export const getMyDocuments = async (req, res) => {
-  try {
-    const docs = await contract.getMyDocuments();
-    res.json(docs);
-  } catch (err) {
-    console.error("❌ Erreur getMyDocuments:", err);
-    res.status(500).json({ error: err.message });
-  }
-};
 
-// ❌ Révoquer un document
-export const revokeDocument = async (req, res) => {
-  try {
-    const { docId } = req.body;
-    const tx = await contract.revokeDocument(docId);
-    await tx.wait();
-    res.json({ success: true, txHash: tx.hash });
-  } catch (err) {
-    console.error("❌ Erreur revokeDocument:", err);
-    res.status(500).json({ error: err.message });
-  }
-};
-
-// 🔄 Partager un document
-export const shareDocument = async (req, res) => {
-  try {
-    const { docId, recipient, duration } = req.body;
-    const tx = await contract.shareDocument(docId, recipient, duration);
-    await tx.wait();
-    res.json({ success: true, txHash: tx.hash });
-  } catch (err) {
-    console.error("❌ Erreur shareDocument:", err);
-    res.status(500).json({ error: err.message });
-  }
-};
-
-// ❌ Révoquer un accès partagé
-export const revokeShare = async (req, res) => {
-  try {
-    const { docId, recipient } = req.body;
-    const tx = await contract.revokeSharedAccess(docId, recipient);
-    await tx.wait();
-    res.json({ success: true, txHash: tx.hash });
-  } catch (err) {
-    console.error("❌ Erreur revokeShare:", err);
-    res.status(500).json({ error: err.message });
-  }
-};
-
-// 🔍 Vérifier un accès
-export const canAccess = async (req, res) => {
-  try {
-    const { owner, docId } = req.params;
-    const access = await contract.canAccess(owner, docId);
-    res.json({ access });
-  } catch (err) {
-    console.error("❌ Erreur canAccess:", err);
-    res.status(500).json({ error: err.message });
-  }
-};
-
-// 📜 Obtenir les accès partagés
-export const getSharedAccesses = async (req, res) => {
+// Révoquer un document
+export async function revokeDocument(req, res) {
   try {
     const { docId } = req.params;
-    const accesses = await contract.getSharedAccesses(docId);
-    res.json(accesses);
-  } catch (err) {
-    console.error("❌ Erreur getSharedAccesses:", err);
-    res.status(500).json({ error: err.message });
+    const account = req.headers["x-wallet-address"];
+
+    if (!account) {
+      console.warn("[revokeDocument] Adresse Ethereum manquante");
+      return res.status(400).json({ error: "Adresse Ethereum requise" });
+    }
+
+    const tx = await contract.connect(wallet).revokeDocument(Number(docId));
+    await tx.wait();
+    res.json({ message: "Document révoqué avec succès" });
+  } catch (error) {
+    console.error(`[revokeDocument] Erreur :`, error);
+    res.status(500).json({ error: "Erreur lors de la révocation du document" });
   }
-};
+}
+
+// Partager un document
+export async function shareDocument(req, res) {
+  try {
+    const { docId, recipient, duration } = req.body;
+    const account = req.headers["x-wallet-address"];
+
+    if (!account) {
+      console.warn("[shareDocument] Adresse Ethereum manquante");
+      return res.status(400).json({ error: "Adresse Ethereum requise" });
+    }
+
+    if (!docId || !recipient || !duration) {
+      console.warn("[shareDocument] Champs manquants dans le payload :", req.body);
+      return res.status(400).json({ error: "Champs requis manquants" });
+    }
+
+    const tx = await contract.connect(wallet).shareDocument(docId, recipient, duration);
+    await tx.wait();
+    res.json({ message: "Document partagé avec succès" });
+  } catch (error) {
+    console.error("[shareDocument] Erreur :", error);
+    res.status(500).json({ error: "Erreur lors du partage du document" });
+  }
+}
+
+// Révoquer un partage
+export async function revokeSharedAccess(req, res) {
+  try {
+    const { docId, recipient } = req.body;
+    const account = req.headers["x-wallet-address"];
+
+    if (!account) {
+      console.warn("[revokeSharedAccess] Adresse Ethereum manquante");
+      return res.status(400).json({ error: "Adresse Ethereum requise" });
+    }
+
+    if (!docId || !recipient) {
+      console.warn("[revokeSharedAccess] Champs manquants dans le payload :", req.body);
+      return res.status(400).json({ error: "Champs requis manquants" });
+    }
+
+    const tx = await contract.connect(wallet).revokeSharedAccess(docId, recipient);
+    await tx.wait();
+    res.json({ message: "Partage révoqué avec succès" });
+  } catch (error) {
+    console.error("[revokeSharedAccess] Erreur :", error);
+    res.status(500).json({ error: "Erreur lors de la révocation du partage" });
+  }
+}
+
+// Obtenir l'historique des accès
+export async function getSharedAccesses(req, res) {
+  try {
+    const { docId } = req.params;
+    const account = req.headers["x-wallet-address"];
+
+    if (!account) {
+      console.warn("[getSharedAccesses] Adresse Ethereum manquante");
+      return res.status(400).json({ error: "Adresse Ethereum requise" });
+    }
+
+    const accesses = await contract.connect(wallet).getSharedAccesses(docId);
+    res.json(accesses);
+  } catch (error) {
+    console.error("[getSharedAccesses] Erreur :", error);
+    res.status(500).json({ error: "Erreur lors de la récupération des accès partagés" });
+  }
+}
+
+// Vérifier si l'utilisateur peut accéder à un document
+export async function canAccessDocument(req, res) {
+  try {
+    const { owner, docId } = req.params;
+    const account = req.headers["x-wallet-address"];
+
+    if (!account) {
+      console.warn("[canAccessDocument] Adresse Ethereum manquante");
+      return res.status(400).json({ error: "Adresse Ethereum requise" });
+    }
+
+    const result = await contract.connect(wallet).canAccess(owner, docId);
+    res.json({ canAccess: result });
+  } catch (error) {
+    console.error("[canAccessDocument] Erreur :", error);
+    res.status(500).json({ error: "Erreur lors de la vérification d'accès" });
+  }
+}

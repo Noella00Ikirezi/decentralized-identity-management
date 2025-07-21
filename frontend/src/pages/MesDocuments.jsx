@@ -1,23 +1,36 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "../styles/MesDocuments.css";
+import { useAuth } from "../context/AuthContext";
 
 export default function MesDocuments() {
+  const { account } = useAuth();
   const [documents, setDocuments] = useState([]);
   const [message, setMessage] = useState("");
 
   useEffect(() => {
     const fetchDocuments = async () => {
+      if (!account) {
+        setMessage("⛔ Adresse Ethereum introuvable.");
+        return;
+      }
+
       try {
-        const response = await axios.get("http://localhost:5000/documents/my");
+        console.log(`[MesDocuments] 📡 Wallet utilisé pour fetch : ${account}`);
+        const response = await axios.get("http://localhost:5000/documents/my", {
+          headers: {
+            "x-wallet-address": account,
+          },
+        });
+
         const rawDocs = response.data;
 
         const formattedDocs = rawDocs.map((doc) => ({
           cid: doc.cid,
-          mimeType: doc.mimeType,
           title: doc.title,
           docType: doc.docType,
-          uploadedAt: new Date(Number(doc.uploadedAt) * 1000).toLocaleString(),
+          mimeType: doc.mimeType,
+          uploadedAt: new Date(doc.uploadedAt * 1000).toLocaleDateString(),
           revoked: doc.revoked,
         }));
 
@@ -29,7 +42,7 @@ export default function MesDocuments() {
     };
 
     fetchDocuments();
-  }, []);
+  }, [account]);
 
   return (
     <div className="docs-container">

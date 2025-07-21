@@ -1,24 +1,45 @@
-// src/pages/PartagerDocument.jsx
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import axios from "axios";
+import { useAuth } from "../context/AuthContext";
 import "../styles/PartagerDocument.css";
 
 export default function PartagerDocument() {
   const [docId, setDocId] = useState("");
   const [receiverAddress, setReceiverAddress] = useState("");
+  const [duration, setDuration] = useState(""); // en secondes
+  const [message, setMessage] = useState("");
+  const { account } = useAuth();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!docId || !receiverAddress) {
-      alert("Veuillez remplir tous les champs.");
-      return;
+    setMessage("");
+
+    if (!docId || !receiverAddress || !duration) {
+      return setMessage("❌ Remplis tous les champs.");
     }
-    // Appel au smart contract ici pour partager le document par ID
-    console.log("Document partagé:", { docId, receiverAddress });
-    alert("Document partagé avec succès !");
-    // Reset form
-    setDocId("");
-    setReceiverAddress("");
+
+    try {
+      const payload = {
+        docId: Number(docId),
+        recipient: receiverAddress,
+        duration: Number(duration),
+      };
+
+      await axios.post("http://localhost:5000/documents/share", payload, {
+        headers: {
+          "x-wallet-address": account,
+        },
+      });
+
+      setMessage("✅ Document partagé !");
+      setDocId("");
+      setReceiverAddress("");
+      setDuration("");
+    } catch (err) {
+      console.error("❌ Erreur partage :", err);
+      setMessage("❌ Échec du partage.");
+    }
   };
 
   return (
@@ -27,24 +48,18 @@ export default function PartagerDocument() {
       <div className="share-card">
         <h2>Partager un document</h2>
         <form onSubmit={handleSubmit}>
-          <label htmlFor="docId">Numéro du document (ID)</label>
-          <input
-            id="docId"
-            type="text"
-            value={docId}
-            onChange={(e) => setDocId(e.target.value)}
-          />
+          <label>Numéro du document (ID)</label>
+          <input type="number" value={docId} onChange={(e) => setDocId(e.target.value)} />
 
-          <label htmlFor="receiver">Adresse Ethereum du destinataire</label>
-          <input
-            id="receiver"
-            type="text"
-            value={receiverAddress}
-            onChange={(e) => setReceiverAddress(e.target.value)}
-          />
+          <label>Adresse Ethereum du destinataire</label>
+          <input type="text" value={receiverAddress} onChange={(e) => setReceiverAddress(e.target.value)} />
 
-          <button type="submit">Valider</button>
+          <label>Durée du partage (en secondes)</label>
+          <input type="number" value={duration} onChange={(e) => setDuration(e.target.value)} />
+
+          <button type="submit">Partager</button>
         </form>
+        {message && <p>{message}</p>}
       </div>
     </div>
   );
