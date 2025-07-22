@@ -1,0 +1,83 @@
+/* 🌄 Page avec fond pastel */
+.historique-page {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(to bottom left, #f0d278, #e49dd0, #fffbe6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+  box-sizing: border-box;
+}
+
+/* 🔙 Bouton retour */
+.back-button {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  font-size: 30px;
+  text-decoration: none;
+  color: #000;
+  background-color: #f2c5e0;
+  padding: 10px;
+  border-radius: 50%;
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s;
+}
+.back-button:hover {
+  transform: scale(1.1);
+}
+
+/* 🗃️ Conteneur central */
+.historique-container {
+  background-color: #ffffffcc;
+  padding: 40px;
+  border-radius: 30px;
+  box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 700px;
+  text-align: center;
+}
+
+/* 🧾 Titre */
+.historique-container h2 {
+  margin-bottom: 30px;
+  font-size: 1.8rem;
+}
+
+/* 📋 Tableau */
+.historique-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 1rem;
+  background-color: #fff;
+  border: 2px solid #000;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* En-têtes */
+.historique-table th {
+  background-color: #f2c76e;
+  border: 2px solid #000;
+  padding: 12px;
+  text-align: center;
+}
+
+/* Lignes */
+.historique-table td {
+  padding: 12px;
+  border: 1px solid #ccc;
+  text-align: center;
+}
+
+.historique-table tr:nth-child(even) {
+  background-color: #fdf5d7;
+}
+
+.historique-table tr:hover {
+  background-color: #fae9b6;
+}

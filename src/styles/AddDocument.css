@@ -1,0 +1,77 @@
+/* Container principal */
+.add-document-page {
+  position: absolute;
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(
+    to bottom left,
+    #6fcf97,
+    #e49dd0,
+    #f0d278,
+    #ffffff
+  );
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+
+.add-document-card {
+  background: rgba(255, 255, 255, 0.9);
+  padding: 2rem;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
+}
+
+/* Titre */
+.add-document-card h2 {
+  text-align: center;
+  margin-bottom: 24px;
+  color: #333;
+}
+
+/* Labels */
+.add-document-card label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
+  color: #555;
+}
+
+/* Inputs */
+.add-document-card input[type='text'],
+.add-document-card input[type='file'] {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 20px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-sizing: border-box;
+}
+
+/* Bouton */
+.add-document-card button {
+  width: 100%;
+  background-color: #007bff;
+  color: white;
+  padding: 12px;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.add-document-card button:hover {
+  background-color: #0056b3;
+}
+
+/* Message */
+.add-document-card p {
+  text-align: center;
+  margin-top: 15px;
+  font-size: 14px;
+  color: #555;
+}

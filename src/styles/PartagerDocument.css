@@ -1,0 +1,109 @@
+/* src/styles/PartagerDocument.css */
+
+.share-page {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw; /* largeur totale */
+  height: 100vh; /* hauteur totale */
+  background: linear-gradient(
+    to bottom left,
+    #6fcf97,
+    #e49dd0,
+    #f0d278,
+    #ffffff
+  );
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+
+
+.back-button {
+  align-self: flex-start;
+  font-size: 30px;
+  margin-bottom: 20px;
+  text-decoration: none;
+  color: #000;
+  background-color: #f2c5e0;
+  padding: 10px;
+  border-radius: 50%;
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s;
+}
+.back-button:hover {
+  transform: scale(1.1);
+}
+
+.share-card {
+  background-color: #ddd;
+  padding: 40px;
+  border-radius: 30px;
+  box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  max-width: 450px;
+  text-align: center;
+}
+
+.share-card h2 {
+  margin-bottom: 30px;
+}
+
+.share-card label {
+  display: block;
+  text-align: left;
+  margin-bottom: 5px;
+  margin-top: 20px;
+}
+
+.share-card input {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  border-radius: 20px;
+  border: 2px solid #000;
+  margin-bottom: 10px;
+  box-sizing: border-box;
+}
+
+.share-card button {
+  margin-top: 25px;
+  background-color: #56cc72;
+  color: black;
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 20px;
+  border: 2px solid #000;
+  cursor: pointer;
+  box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.2s, transform 0.2s;
+}
+
+.share-card button:hover {
+  background-color: #45b862;
+  transform: scale(1.03);
+}
+
+.custom-select {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  border-radius: 20px;
+  border: 2px solid #000;
+  margin-bottom: 10px;
+  box-sizing: border-box;
+  background-color: #fff;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2210%22%20height%3D%225%22%20viewBox%3D%220%200%2010%205%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cpath%20d%3D%22M0%200l5%205%205-5z%22%20fill%3D%22%23000%22/%3E%3C/svg%3E');
+  background-repeat: no-repeat;
+  background-position: right 10px top 50%;
+  background-size: 12px;
+}
+.custom-select:hover {
+  border-color: #888;
+  background-color: #f9f9f9;
+}

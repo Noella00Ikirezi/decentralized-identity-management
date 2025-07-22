@@ -1,0 +1,29 @@
+{
+  "name": "dims",
+  "version": "1.0.0",
+  "description": "Decentralized Identity Management System",
+  "author": "noella",
+  "dependencies": {
+    "axios": "^1.10.0",
+    "buffer": "^6.0.3",
+    "ethers": "^6.15.0",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "react-router-dom": "^7.7.0",
+    "react-scripts": "5.0.0",
+    "truffle": "5.0.5",
+    "web3": "4.16.0"
+  },
+  "scripts": {
+    "start": "set NODE_OPTIONS=--openssl-legacy-provider && react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ]
+}
